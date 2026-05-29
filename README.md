@@ -88,13 +88,12 @@ Esto creará las tablas `usuarios`, `productos` e insertará los datos semilla.
 
 El archivo de configuración principal se encuentra en `appsettings.json`:
 
-```json
-{
+```{
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Port=5432;Database=BicicleteriaDB;User Id=postgres;Password=plokij"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=BicicleteriaDB;User Id=postgres;Password=TU_PASSWORD_AQUI"
   },
   "Jwt": {
-    "Key": "tu_clave_secreta_super_larga_para_jwt_debe_ser_larga_minimo_32_caracteres",
+    "Key": "CLAVE_SECRETA_JWT_AQUI",
     "Issuer": "https://bicicleteria.localhost",
     "Audience": "bicicleteria-app",
     "ExpireMinutes": 60
@@ -409,20 +408,3 @@ CREATE DATABASE "BicicleteriaDB";
 - [JWT.io](https://jwt.io/)
 
 ---
-
-## 👨‍💻 Información de Contacto
-
-**Autor:** Alan Rosales  
-**Email:** alan.rosales@bicileteria.com  
-**GitHub:** [@rosalesAlan](https://github.com/rosalesAlan)
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo licencia MIT. Ver archivo `LICENSE` para más detalles.
-
----
-
-**Última actualización:** 29 de Mayo de 2026  
-**Versión del Backend:** 1.0.0

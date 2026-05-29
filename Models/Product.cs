@@ -3,9 +3,10 @@ namespace Bicicleteria.Backend.Models
     public class Product
     {
         public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string Descripcion { get; set; }
-        public decimal Precio { get; set; }
-        public int Disponibilidad { get; set; }  // stock o cantidad disponible
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public decimal Price { get; set; }
+        public string ImageUrl { get; set; }
+        public string Category { get; set; }
     }
 }
