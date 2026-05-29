@@ -26,12 +26,12 @@ namespace Bicicleteria.Backend.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            if (request == null || string.IsNullOrWhiteSpace(request.Mail) || string.IsNullOrWhiteSpace(request.Password))
             {
-                return BadRequest(new { message = "Email y contraseña son requeridos" });
+                return BadRequest(new { message = "Mail y contraseña son requeridos" });
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+            var user = _context.Usuarios.FirstOrDefault(u => u.Mail == request.Mail);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
@@ -42,8 +42,10 @@ namespace Bicicleteria.Backend.Controllers
             var userDto = new UserDto
             {
                 Id = user.Id,
-                Name = user.Name,
-                Email = user.Email
+                Nombre = user.Nombre,
+                Apellido = user.Apellido,
+                Mail = user.Mail,
+                Tipo = user.Tipo
             };
 
             return Ok(new LoginResponse { AccessToken = token, User = userDto });
@@ -62,8 +64,9 @@ namespace Bicicleteria.Backend.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Name)
+                new Claim(ClaimTypes.Email, user.Mail),
+                new Claim(ClaimTypes.Name, $"{user.Nombre} {user.Apellido}"),
+                new Claim("Tipo", user.Tipo)
             };
 
             var token = new JwtSecurityToken(
