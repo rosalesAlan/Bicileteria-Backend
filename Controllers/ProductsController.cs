@@ -19,6 +19,7 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         [HttpGet]
+        [Produces("application/json")]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
             var products = await _context.Productos.ToListAsync();
@@ -26,6 +27,8 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         [HttpPost]
+        [Produces("application/json")]
+        [Consumes("application/json")]
         public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
         {
             if (string.IsNullOrWhiteSpace(product.Name))

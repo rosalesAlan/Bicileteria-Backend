@@ -5,6 +5,7 @@ using BCrypt.Net;
 using Bicicleteria.Backend.Data;
 using Bicicleteria.Backend.DTOs;
 using Bicicleteria.Backend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -24,6 +25,9 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [Consumes("application/json")]
         public IActionResult Login([FromBody] LoginRequest request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.Mail) || string.IsNullOrWhiteSpace(request.Password))

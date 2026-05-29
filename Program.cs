@@ -99,14 +99,41 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ===== 5. CONTROLADORES =====
+// ===== 5. SWAGGER - Documentación API =====
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Bicicletería Backend API", Version = "v1" });
+});
+
+// ===== 6. CONTROLADORES =====
 builder.Services.AddControllers();
 
+// ===== 7. CONSTRUIR LA APLICACIÓN =====
 var app = builder.Build();
 
 // ===== PIPELINE DE MIDDLEWARE =====
 
-// Usar CORS con la política "AllowAll"
+// Archivos estáticos (necesario para Swagger UI)
+app.UseStaticFiles();
+
+// Usar Swagger (disponible en /swagger/index.html en desarrollo)
+//if (app.Environment.IsDevelopment()) !!!!!!!!
+
+// por ahora para testear Buscaremos que el sistema funcione en producción también, luego se puede restringir a desarrollo
+if(true)
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bicicletería Backend API V1");
+        c.RoutePrefix = string.Empty; // Hacer Swagger la página principal
+        c.DefaultModelsExpandDepth(2);
+        c.DefaultModelExpandDepth(2);
+    });
+}
+
+// Usar CORS
 app.UseCors("AllowAll");
 
 // Usar autenticación
