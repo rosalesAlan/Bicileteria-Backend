@@ -3,23 +3,57 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Bicicleteria.Backend.Data;
+using DotNetEnv;
+
+// ===== CARGAR VARIABLES DE ENTORNO DESDE .env =====
+// DotNetEnv.Env.Load() debe ser llamado ANTES de construir la aplicación
+// para que las variables de entorno estén disponibles cuando se cargue la configuración
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ===== AGREGAR PROVEEDOR DE VARIABLES DE ENTORNO =====
+// Esto permite que ASP.NET Core use variables de entorno para reemplazar
+// valores en la configuración, incluyendo placeholders como ${DB_HOST}
+builder.Configuration.AddEnvironmentVariables();
+
+// ===== HELPER: Expandir variables de entorno con sintaxis ${...} =====
+static string ExpandEnvironmentVariables(string? input)
+{
+    if (string.IsNullOrEmpty(input)) return input ?? string.Empty;
+
+    var pattern = @"\$\{([^}]+)\}";
+    return System.Text.RegularExpressions.Regex.Replace(input, pattern, match =>
+    {
+        var envVar = match.Groups[1].Value;
+        return System.Environment.GetEnvironmentVariable(envVar) ?? match.Value;
+    });
+}
+
 // ===== 1. DBCONTEXT - Configurar AppDbContext con PostgreSQL =====
+// Leer la cadena de conexión desde configuración y expandir variables de entorno
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrEmpty(connectionString))
+{
+    connectionString = ExpandEnvironmentVariables(connectionString);
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(connectionString)
 );
 
 // ===== 2. AUTENTICACIÓN JWT =====
-// Leer configuración JWT desde appsettings.json
-var jwtKey = builder.Configuration["Jwt:Key"] 
-    ?? throw new InvalidOperationException("JWT Key no configurada en appsettings.json");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] 
-    ?? throw new InvalidOperationException("JWT Issuer no configurado en appsettings.json");
-var jwtAudience = builder.Configuration["Jwt:Audience"] 
-    ?? throw new InvalidOperationException("JWT Audience no configurado en appsettings.json");
-var jwtExpireMinutes = int.TryParse(builder.Configuration["Jwt:ExpireMinutes"], out var expireMinutes) 
+// Leer configuración JWT desde appsettings.json y expandir variables de entorno
+var jwtKey = ExpandEnvironmentVariables(builder.Configuration["Jwt:Key"]) 
+    ?? throw new InvalidOperationException("JWT Key no configurada en appsettings.json o en .env");
+var jwtIssuer = ExpandEnvironmentVariables(builder.Configuration["Jwt:Issuer"]) 
+    ?? throw new InvalidOperationException("JWT Issuer no configurado en appsettings.json o en .env");
+var jwtAudience = ExpandEnvironmentVariables(builder.Configuration["Jwt:Audience"]) 
+    ?? throw new InvalidOperationException("JWT Audience no configurado en appsettings.json o en .env");
+
+// Para ExpireMinutes, expandir primero, luego parsear
+var jwtExpireMinutesStr = ExpandEnvironmentVariables(builder.Configuration["Jwt:ExpireMinutes"]);
+var jwtExpireMinutes = int.TryParse(jwtExpireMinutesStr, out var expireMinutes) 
     ? expireMinutes 
     : 60;
 

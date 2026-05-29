@@ -117,7 +117,6 @@ Creá un archivo `appsettings.json` en la raíz del proyecto con esta estructura
 | `Jwt.Key` | Clave secreta para firmar tokens JWT (⚠️ mínimo 32 caracteres, cambiar en producción) |
 | `Jwt.ExpireMinutes` | Tiempo de expiración de tokens en minutos |
 
-> ⚠️ **Importante:** El archivo `appsettings.json` está en el `.gitignore`. Cada desarrollador debe crear el suyo propio. Nunca subas credenciales reales al repositorio.
 
 ---
 
@@ -246,8 +245,64 @@ Inicia sesión con email y contraseña.
 ## ▶️ Ejecución del Proyecto
 
 ```bash
-# Modo desarrollo
-dotnet run
+El servidor estará disponible en: `http://localhost:5000`
+
+### Verificar que todo funciona
+
+1. **Prueba de base de datos:**
+
+```bash
+dotnet ef database update --verbose
+```
+
+Deberías ver mensajes indicando que la migración se aplicó correctamente.
+
+2. **Prueba de autenticación:**
+
+Realiza una solicitud POST a `http://localhost:5000/api/auth/login` con:
+
+```json
+{
+  "mail": "admin@bicileteria.com",
+  "password": "Demo1234"
+}
+```
+
+Si recibes un token JWT válido, la configuración es correcta.
+
+3. **Prueba de productos:**
+
+Usa el token obtenido y realiza una solicitud GET a `http://localhost:5000/api/products` con el header:
+```
+
+El servidor estará disponible en: `http://localhost:5000`
+
+### Verificar que todo funciona
+
+1. **Prueba de base de datos:**
+
+```bash
+dotnet ef database update --verbose
+```
+
+Deberías ver mensajes indicando que la migración se aplicó correctamente.
+
+2. **Prueba de autenticación:**
+
+Realiza una solicitud POST a `http://localhost:5000/api/auth/login` con:
+
+```json
+{
+  "mail": "admin@bicileteria.com",
+  "password": "Demo1234"
+}
+```
+
+Si recibes un token JWT válido, la configuración es correcta.
+
+3. **Prueba de productos:**
+
+Usa el token obtenido y realiza una solicitud GET a `http://localhost:5000/api/products` con el header:
 
 # El servidor estará disponible en: http://localhost:5000
 ```
@@ -288,9 +343,6 @@ public class Product
 
 ## 📝 Notas Importantes
 
-### Seguridad
-- 🔑 Cambiar `Jwt:Key` por una clave robusta antes de producción
-- 🔐 Las contraseñas siempre se hashean con BCrypt, nunca se almacenan en texto plano
 
 ### Desarrollo
 - Las migraciones deben ejecutarse antes de iniciar la aplicación
