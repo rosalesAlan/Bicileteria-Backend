@@ -182,21 +182,21 @@ Inicia sesión con email y contraseña.
 **Request:**
 ```json
 {
-  "mail": "admin@bicileteria.com",
-  "password": "Demo1234"
+  "mail": "tumail@tmail.com",
+  "password": "Contraseña1234"
 }
 ```
 
 **Response (200 OK):**
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "accessToken": "...",
   "user": {
     "id": 1,
-    "nombre": "Admin",
-    "apellido": "Sistema",
-    "mail": "admin@bicileteria.com",
-    "tipo": "admin"
+    "nombre": "Nombre",
+    "apellido": "Apellido",
+    "mail": "tumail@mail.com",
+    "tipo": "tipo"
   }
 }
 ```
@@ -289,7 +289,6 @@ public class Product
 ## 📝 Notas Importantes
 
 ### Seguridad
-- ⚠️ **Nunca** subir `appsettings.json` con credenciales reales a GitHub
 - 🔑 Cambiar `Jwt:Key` por una clave robusta antes de producción
 - 🔐 Las contraseñas siempre se hashean con BCrypt, nunca se almacenan en texto plano
 
