@@ -1,11 +1,9 @@
-Aquí tienes la versión segura del `README.md`, sin credenciales expuestas y con instrucciones claras para que cada desarrollador configure sus propias claves:
-
----
 
 ```markdown
 # 🚴 Bicicletería Backend
 
-Backend API para gestión de bicicletas y usuarios. Desarrollado con **ASP.NET Core 8.0**, **Entity Framework Core**, **PostgreSQL** y **JWT Authentication**.
+API REST para gestión de bicicletas y usuarios.  
+Desarrollada con **ASP.NET Core 8.0**, **Entity Framework Core**, **PostgreSQL**, **JWT** y **Swagger**.
 
 ---
 
@@ -13,41 +11,42 @@ Backend API para gestión de bicicletas y usuarios. Desarrollado con **ASP.NET C
 
 - [Características](#características)
 - [Requisitos Previos](#requisitos-previos)
-- [Instalación](#instalación)
-- [Configuración](#configuración)
+- [Instalación y Configuración](#instalación-y-configuración)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Base de Datos](#base-de-datos)
 - [API Endpoints](#api-endpoints)
-- [Autenticación](#autenticación)
+- [Autenticación JWT](#autenticación-jwt)
+- [Swagger UI](#swagger-ui)
 - [Datos Semilla](#datos-semilla)
-- [Ejecución del Proyecto](#ejecución-del-proyecto)
-- [Notas Importantes](#notas-importantes)
+- [Ejecución](#ejecución)
+- [Solución de Problemas](#solución-de-problemas)
+- [Paquetes NuGet](#paquetes-nuget)
+- [Enlaces Útiles](#enlaces-útiles)
 
 ---
 
 ## ✨ Características
 
-- ✅ **Autenticación JWT** - Tokens seguros con expiración configurable
-- ✅ **Base de Datos PostgreSQL** - Relacional y escalable
-- ✅ **Entity Framework Core 8.0** - ORM moderno y eficiente
-- ✅ **Migraciones Automáticas** - Control de versiones de base de datos
-- ✅ **BCrypt Password Hashing** - Contraseñas seguras
-- ✅ **CORS Habilitado** - Comunicación con frontends
-- ✅ **Convenciones PostgreSQL** - Nombres de tablas y columnas en minúsculas
-- ✅ **Datos Semilla** - Usuarios y productos de prueba pre-cargados
+- ✅ Autenticación JWT (Bearer token, expiración configurable)
+- ✅ Base de datos PostgreSQL con Entity Framework Core 8
+- ✅ Migraciones automáticas y datos semilla
+- ✅ Contraseñas hasheadas con BCrypt
+- ✅ CORS habilitado (para comunicación con frontend)
+- ✅ Documentación interactiva con **Swagger** (OpenAPI)
+- ✅ Uso de variables de entorno (`.env`) para secretos
+- ✅ Endpoints públicos y protegidos
 
 ---
 
 ## 🛠️ Requisitos Previos
 
-- **.NET 8.0 SDK** - [Descargar](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **PostgreSQL 12+** - [Descargar](https://www.postgresql.org/download/)
-- **Visual Studio 2022** o **VS Code**
-- **Git** (opcional)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [PostgreSQL](https://www.postgresql.org/download/) (12 o superior)
+- Opcional: Visual Studio 2022 / VS Code / Git
 
 ---
 
-## 📥 Instalación
+## 📥 Instalación y Configuración
 
 ### 1. Clonar el repositorio
 
@@ -56,23 +55,39 @@ git clone https://github.com/rosalesAlan/Bicileteria-Backend.git
 cd Bicileteria-Backend
 ```
 
-### 2. Restaurar paquetes NuGet
+### 2. Restaurar paquetes
 
 ```bash
 dotnet restore
 ```
 
-### 3. Configurar la base de datos
+### 3. Configurar variables de entorno (archivo `.env`)
 
-Asegúrate de que PostgreSQL esté corriendo. Si la base de datos **BicicleteriaDB** no existe, créala:
+Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido (basado en `.env.example`):
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=BicicleteriaDB
+DB_USER=postgres
+DB_PASSWORD=tu_contraseña_aqui
+
+JWT_KEY=clave_secreta_muy_larga_minimo_32_caracteres
+JWT_ISSUER=https://bicicleteria.localhost
+JWT_AUDIENCE=bicicleteria-app
+JWT_EXPIRE_MINUTES=60
+```
+
+> ⚠️ **Nunca** subas el archivo `.env` al repositorio (está en `.gitignore`).  
+> Puedes copiar `.env.example` como plantilla.
+
+### 4. Crear la base de datos (si no existe)
+
+Conéctate a PostgreSQL y ejecuta:
 
 ```sql
 CREATE DATABASE "BicicleteriaDB";
 ```
-
-### 4. Configurar el archivo de conexión
-
-Creá un archivo `appsettings.json` en la raíz del proyecto basándote en el ejemplo de la sección [Configuración](#configuración). Reemplazá `TU_CONTRASEÑA` con la contraseña de tu usuario `postgres`.
 
 ### 5. Aplicar migraciones
 
@@ -80,43 +95,16 @@ Creá un archivo `appsettings.json` en la raíz del proyecto basándote en el ej
 dotnet ef database update
 ```
 
-Esto creará las tablas `usuarios`, `productos` e insertará los datos semilla.
+Esto creará las tablas `usuarios` y `productos`, e insertará los datos de prueba.
 
 ---
 
 ## ⚙️ Configuración
 
-Creá un archivo `appsettings.json` en la raíz del proyecto con esta estructura:
+El proyecto usa **DotNetEnv** para cargar las variables del archivo `.env` y expandir placeholders en `appsettings.json`.  
+No necesitas editar `appsettings.json` directamente; solo modifica `.env`.
 
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=BicicleteriaDB;Username=postgres;Password=TU_CONTRASEÑA"
-  },
-  "Jwt": {
-    "Key": "clave_secreta_super_larga_para_jwt_minimo_32_caracteres",
-    "Issuer": "https://bicicleteria.localhost",
-    "Audience": "bicicleteria-app",
-    "ExpireMinutes": 60
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.EntityFrameworkCore": "Information"
-    }
-  },
-  "AllowedHosts": "*"
-}
-```
-
-**Configuraciones importantes:**
-
-| Clave | Descripción |
-|-------|-------------|
-| `ConnectionStrings.DefaultConnection` | Cadena de conexión a PostgreSQL. Reemplazá `TU_CONTRASEÑA` por tu clave real |
-| `Jwt.Key` | Clave secreta para firmar tokens JWT (⚠️ mínimo 32 caracteres, cambiar en producción) |
-| `Jwt.ExpireMinutes` | Tiempo de expiración de tokens en minutos |
-
+El archivo `appsettings.json` ya contiene placeholders como `${DB_HOST}`, `${JWT_KEY}`, etc., que serán reemplazados automáticamente en tiempo de ejecución.
 
 ---
 
@@ -125,264 +113,241 @@ Creá un archivo `appsettings.json` en la raíz del proyecto con esta estructura
 ```
 Bicileteria-Backend/
 ├── Controllers/
-│   └── AuthController.cs          # Endpoints de autenticación
+│   ├── AuthController.cs          # POST /api/auth/login
+│   └── ProductsController.cs      # GET /api/products, POST /api/products
 ├── Data/
-│   └── AppDbContext.cs             # DbContext principal
+│   └── AppDbContext.cs            # DbContext y configuración de modelos
 ├── DTOs/
-│   ├── LoginRequest.cs             # DTO para login
-│   ├── LoginResponse.cs            # DTO de respuesta
-│   └── UserDto.cs                  # DTO de usuario
+│   ├── LoginRequest.cs
+│   ├── LoginResponse.cs
+│   └── UserDto.cs
 ├── Models/
-│   ├── User.cs                     # Modelo de usuario
-│   └── Product.cs                  # Modelo de producto
-├── Migrations/
-│   └── InitialCreate.cs            # Migración inicial
-├── appsettings.json                # Configuración (crear manualmente)
-├── Program.cs                      # Punto de entrada
-└── README.md                       # Este archivo
+│   ├── User.cs
+│   └── Product.cs
+├── Migrations/                    # Migraciones generadas por EF Core
+├── .env                           # Variables de entorno (ignorado por Git)
+├── .env.example                   # Plantilla de ejemplo
+├── appsettings.json               # Configuración con placeholders
+├── Program.cs                     # Configuración de servicios y middleware
+└── README.md                      # Este archivo
 ```
 
 ---
 
 ## 🗄️ Base de Datos
 
-### Tabla: `usuarios`
+### Tabla `usuarios`
 
 | Columna | Tipo | Descripción |
 |---------|------|-------------|
 | id | INTEGER PK | Identificador único |
-| nombre | VARCHAR(100) | Nombre del usuario |
-| apellido | VARCHAR(100) | Apellido del usuario |
-| numerotelefono | VARCHAR(20) | Teléfono de contacto |
+| nombre | VARCHAR(100) | Nombre |
+| apellido | VARCHAR(100) | Apellido |
+| numerotelefono | VARCHAR(20) | Teléfono |
 | mail | VARCHAR(200) UNIQUE | Correo electrónico |
-| tipo | VARCHAR(50) | Rol: 'admin', 'vendedor', 'cliente' |
-| passwordhash | VARCHAR(500) | Contraseña hasheada con BCrypt |
+| tipo | VARCHAR(50) | `admin`, `vendedor` o `cliente` |
+| passwordhash | VARCHAR(500) | Hash BCrypt de la contraseña |
 
-### Tabla: `productos`
+### Tabla `productos`
 
 | Columna | Tipo | Descripción |
 |---------|------|-------------|
 | id | INTEGER PK | Identificador único |
-| nombre | VARCHAR(200) | Nombre del producto |
-| descripcion | VARCHAR(1000) | Descripción detallada |
-| precio | NUMERIC(10,2) | Precio unitario |
-| disponibilidad | INTEGER | Stock disponible |
+| name | VARCHAR(200) | Nombre del producto |
+| description | VARCHAR(1000) | Descripción |
+| price | NUMERIC(10,2) | Precio |
+| imageurl | VARCHAR(500) | URL de la imagen |
+| category | VARCHAR(100) | Categoría (Montaña, Ruta, Urbana, etc.) |
 
 ---
 
 ## 🔌 API Endpoints
 
-### Autenticación
+### 🔓 Público (sin autenticación)
 
-#### **POST** `/api/auth/login`
-
-Inicia sesión con email y contraseña.
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST   | `/api/auth/login` | Autenticar usuario y obtener token JWT |
 
 **Request:**
 ```json
 {
-  "mail": "tumail@tmail.com",
-  "password": "Contraseña1234"
+  "mail": "admin@bicileteria.com",
+  "password": "Demo1234"
 }
 ```
 
-**Response (200 OK):**
+**Response (200):**
 ```json
 {
-  "accessToken": "...",
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
   "user": {
     "id": 1,
-    "nombre": "Nombre",
-    "apellido": "Apellido",
-    "mail": "tumail@mail.com",
-    "tipo": "tipo"
+    "nombre": "Admin",
+    "apellido": "Sistema",
+    "mail": "admin@bicileteria.com",
+    "tipo": "admin"
   }
-}
-```
-
-**Response (401 Unauthorized):**
-```json
-{
-  "message": "Credenciales inválidas"
 }
 ```
 
 ---
 
-## 🔐 Autenticación
+### 🔒 Protegidos (requieren token JWT)
 
-### Sistema de Tokens JWT
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET    | `/api/products` | Obtener todos los productos |
+| POST   | `/api/products` | Crear un nuevo producto |
 
-1. El cliente envía `mail` y `password` al endpoint `/api/auth/login`
-2. El servidor valida las credenciales contra la base de datos
-3. Si son válidas, genera un JWT con los datos del usuario
-4. El cliente incluye el token en el header `Authorization: Bearer <token>` para futuras requests
+**GET /api/products – Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "name": "Bicicleta Mountain Bike",
+    "description": "Bicicleta de montaña de 26 pulgadas...",
+    "price": 599.99,
+    "imageUrl": "https://...",
+    "category": "Montaña"
+  }
+]
+```
+
+**POST /api/products – Request:**
+```json
+{
+  "name": "Bicicleta BMX",
+  "description": "Para trucos y acrobacias",
+  "price": 299.99,
+  "imageUrl": "https://...",
+  "category": "BMX"
+}
+```
+**Response (201):** el producto creado, con su `id` asignado.
+
+---
+
+## 🔐 Autenticación JWT
+
+El sistema utiliza **Bearer tokens** (JWT) firmados con HMAC SHA256.
+
+- **Header requerido:** `Authorization: Bearer <token>`
+- **Expiración por defecto:** 60 minutos (configurable en `.env` con `JWT_EXPIRE_MINUTES`)
+
+### Flujo de autenticación
+
+1. El cliente envía `mail` y `password` a `/api/auth/login`.
+2. El servidor valida credenciales (BCrypt) y genera un token JWT.
+3. El cliente debe incluir el token en el header `Authorization` en cada request a endpoints protegidos.
+4. El servidor valida el token (firma, expiración, issuer, audience) antes de procesar la request.
+
+---
+
+## 🧪 Swagger UI
+
+La documentación interactiva de la API está disponible en **modo desarrollo** en:
+
+```
+http://localhost:5000/
+```
+
+### Cómo usar Swagger con autenticación
+
+1. Ejecuta el proyecto (`dotnet run`).
+2. Abre `http://localhost:5000`.
+3. Ve al endpoint `POST /api/auth/login`, haz clic en **Try it out**, ingresa credenciales (ej. `admin@bicileteria.com` / `Demo1234`) y ejecuta.
+4. Copia el valor de `accessToken` de la respuesta.
+5. Haz clic en el botón **Authorize** (candado), escribe `Bearer <token_copiado>` y haz clic en **Authorize**.
+6. Ahora puedes probar `GET /api/products` y `POST /api/products` sin errores 401.
+
+> Swagger solo está habilitado cuando `ASPNETCORE_ENVIRONMENT=Development`. En producción no se expone.
 
 ---
 
 ## 👥 Datos Semilla
 
-### Usuarios Predeterminados
+### Usuarios de prueba
 
-| Nombre | Email | Tipo | Contraseña |
-|--------|-------|------|-------------|
-| Admin Sistema | admin@bicileteria.com | admin | Demo1234 |
-| Usuario Vendedor | usuario@bicileteria.com | vendedor | Demo1234 |
-| Cliente Ejemplo | cliente@bicileteria.com | cliente | Demo1234 |
+| Email | Contraseña | Tipo |
+|-------|------------|------|
+| admin@bicileteria.com | Demo1234 | admin |
+| usuario@bicileteria.com | Demo1234 | vendedor |
+| cliente@bicileteria.com | Demo1234 | cliente |
 
-> 🔐 Las contraseñas están hasheadas con BCrypt. No se pueden ver en texto plano en la base de datos.
+### Productos de prueba
 
-### Productos Predeterminados
+| Nombre | Precio | Categoría |
+|--------|--------|-----------|
+| Bicicleta Mountain Bike | $599.99 | Montaña |
+| Bicicleta Ruta | $799.99 | Ruta |
+| Bicicleta Urbana | $449.99 | Urbana |
 
-| Nombre | Descripción | Precio | Stock |
-|--------|-------------|--------|-------|
-| Bicicleta Mountain Bike | Bicicleta de montaña de 26" con suspensión delantera | $599.99 | 15 |
-| Bicicleta Ruta | Bicicleta de ruta ligera y rápida para carreteras | $799.99 | 10 |
-| Bicicleta Urbana | Bicicleta cómoda para desplazamientos en ciudad | $449.99 | 20 |
+Los datos se insertan automáticamente la primera vez que se aplican las migraciones.
 
 ---
 
-## ▶️ Ejecución del Proyecto
+## ▶️ Ejecución
+
+### Modo desarrollo
 
 ```bash
-El servidor estará disponible en: `http://localhost:5000`
-
-### Verificar que todo funciona
-
-1. **Prueba de base de datos:**
-
-```bash
-dotnet ef database update --verbose
+dotnet run
 ```
 
-Deberías ver mensajes indicando que la migración se aplicó correctamente.
+El servidor escuchará en `http://localhost:5000` (y `https://localhost:5001` si está configurado).
 
-2. **Prueba de autenticación:**
+### Verificar funcionamiento
 
-Realiza una solicitud POST a `http://localhost:5000/api/auth/login` con:
-
-```json
-{
-  "mail": "admin@bicileteria.com",
-  "password": "Demo1234"
-}
-```
-
-Si recibes un token JWT válido, la configuración es correcta.
-
-3. **Prueba de productos:**
-
-Usa el token obtenido y realiza una solicitud GET a `http://localhost:5000/api/products` con el header:
-```
-
-El servidor estará disponible en: `http://localhost:5000`
-
-### Verificar que todo funciona
-
-1. **Prueba de base de datos:**
-
-```bash
-dotnet ef database update --verbose
-```
-
-Deberías ver mensajes indicando que la migración se aplicó correctamente.
-
-2. **Prueba de autenticación:**
-
-Realiza una solicitud POST a `http://localhost:5000/api/auth/login` con:
-
-```json
-{
-  "mail": "admin@bicileteria.com",
-  "password": "Demo1234"
-}
-```
-
-Si recibes un token JWT válido, la configuración es correcta.
-
-3. **Prueba de productos:**
-
-Usa el token obtenido y realiza una solicitud GET a `http://localhost:5000/api/products` con el header:
-
-# El servidor estará disponible en: http://localhost:5000
-```
+- **Base de datos:** `dotnet ef database update --verbose`
+- **Login:** (con `curl` o Swagger)  
+  ```bash
+  curl -X POST http://localhost:5000/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"mail":"admin@bicileteria.com","password":"Demo1234"}'
+  ```
+- **Productos (con token):**  
+  Reemplaza `<TOKEN>` por el obtenido:
+  ```bash
+  curl -X GET http://localhost:5000/api/products \
+    -H "Authorization: Bearer <TOKEN>"
+  ```
 
 ---
 
-## 🔍 Modelos de Datos
+## 🐛 Solución de Problemas
 
-### User.cs
-
-```csharp
-public class User
-{
-    public int Id { get; set; }
-    public string Nombre { get; set; }
-    public string Apellido { get; set; }
-    public string NumeroTelefono { get; set; }
-    public string Mail { get; set; }
-    public string Tipo { get; set; }  // 'admin', 'vendedor', 'cliente'
-    public string PasswordHash { get; set; }
-}
-```
-
-### Product.cs
-
-```csharp
-public class Product
-{
-    public int Id { get; set; }
-    public string Nombre { get; set; }
-    public string Descripcion { get; set; }
-    public decimal Precio { get; set; }
-    public int Disponibilidad { get; set; }
-}
-```
+| Error | Posible solución |
+|-------|------------------|
+| `Connection refused` o `database does not exist` | Verifica que PostgreSQL esté corriendo y que la base de datos `BicicleteriaDB` exista. |
+| `Authentication failed for user postgres` | Comprueba la contraseña en tu archivo `.env` (variable `DB_PASSWORD`). |
+| `401 Unauthorized` en endpoints protegidos | El token puede haber expirado o no se incluyó correctamente. Vuelve a hacer login. |
+| Swagger no carga (404) | Asegúrate de estar en entorno Development y que la URL sea `http://localhost:5000` (sin `/swagger` extra). |
+| `app.Run()` duplicado (error histórico) | Ya está corregido: solo una llamada en `Program.cs`. |
+| El endpoint login también pide token | Debe tener `[AllowAnonymous]`. Verifica que `AuthController` lo incluya. |
 
 ---
 
-## 📝 Notas Importantes
+## 📦 Paquetes NuGet Utilizados
 
-
-### Desarrollo
-- Las migraciones deben ejecutarse antes de iniciar la aplicación
-- Si modificás modelos, generá una nueva migración: `dotnet ef migrations add NombreMigracion`
-- Los logs de Entity Framework están habilitados para debugging
-
-### Producción
-- Usar variables de entorno para credenciales en lugar de `appsettings.json`
-- Configurar CORS más restrictivo
-- Implementar HTTPS obligatorio
-
----
-
-## 🐛 Troubleshooting
-
-| Error | Solución |
-|-------|----------|
-| "Authentication failed for user postgres" | Verificá la contraseña en tu `appsettings.json` |
-| "database does not exist" | Creá la base de datos: `CREATE DATABASE "BicicleteriaDB";` |
-| "Connection refused" | Verificá que PostgreSQL esté corriendo |
-| "password authentication failed" | Revisá usuario y contraseña en la cadena de conexión |
-
----
-
-## 📚 Paquetes NuGet Utilizados
-
-| Paquete | Uso |
-|---------|-----|
-| Microsoft.EntityFrameworkCore | ORM |
-| Npgsql.EntityFrameworkCore.PostgreSQL | Driver PostgreSQL |
-| Microsoft.EntityFrameworkCore.Tools | Migraciones |
-| Microsoft.AspNetCore.Authentication.JwtBearer | Autenticación JWT |
-| BCrypt.Net-Next | Hash de contraseñas |
+| Paquete | Versión | Uso |
+|---------|---------|-----|
+| Microsoft.EntityFrameworkCore | 8.0 | ORM base |
+| Npgsql.EntityFrameworkCore.PostgreSQL | 8.0 | Proveedor para PostgreSQL |
+| Microsoft.EntityFrameworkCore.Tools | 8.0 | Migraciones |
+| Microsoft.AspNetCore.Authentication.JwtBearer | 8.0 | Autenticación JWT |
+| BCrypt.Net-Next | 4.0 | Hashing de contraseñas |
+| DotNetEnv | 3.2 | Carga de `.env` |
+| Swashbuckle.AspNetCore | 10.1.7 | Swagger / OpenAPI |
 
 ---
 
 ## 🔗 Enlaces Útiles
 
 - [Documentación ASP.NET Core](https://learn.microsoft.com/es-es/aspnet/core/)
-- [Documentación Entity Framework Core](https://learn.microsoft.com/es-es/ef/core/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Entity Framework Core](https://learn.microsoft.com/es-es/ef/core/)
+- [PostgreSQL](https://www.postgresql.org/docs/)
 - [JWT.io](https://jwt.io/)
-```
+- [Swagger UI](https://swagger.io/tools/swagger-ui/)
+
+---
