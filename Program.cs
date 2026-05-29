@@ -6,9 +6,9 @@ using Bicicleteria.Backend.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===== 1. DBCONTEXT - Configurar AppDbContext con SQLite =====
+// ===== 1. DBCONTEXT - Configurar AppDbContext con PostgreSQL =====
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
 // ===== 2. AUTENTICACIÓN JWT =====
