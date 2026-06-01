@@ -44,7 +44,6 @@ namespace Bicicleteria.Backend.Data
             modelBuilder.Entity<Product>().Property(p => p.Name).IsRequired().HasMaxLength(200);
             modelBuilder.Entity<Product>().Property(p => p.Description).HasMaxLength(1000);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasPrecision(10, 2);
-            modelBuilder.Entity<Product>().Property(p => p.ImageUrl).HasMaxLength(500);
             modelBuilder.Entity<Product>().Property(p => p.Category).HasMaxLength(100);
 
             // Generar hashes de contraseñas usando BCrypt
@@ -94,7 +93,6 @@ namespace Bicicleteria.Backend.Data
                     Name = "Bicicleta Mountain Bike",
                     Description = "Bicicleta de montaña de 26 pulgadas con suspensión delantera y frenos de disco.",
                     Price = 599.99m,
-                    ImageUrl = "https://example.com/mountain-bike.jpg",
                     Category = "Montaña"
                 },
                 new Product
@@ -103,7 +101,6 @@ namespace Bicicleteria.Backend.Data
                     Name = "Bicicleta Ruta",
                     Description = "Bicicleta de ruta ligera y rápida, ideal para carreteras. Marco de aluminio.",
                     Price = 799.99m,
-                    ImageUrl = "https://example.com/ruta-bike.jpg",
                     Category = "Ruta"
                 },
                 new Product
@@ -112,7 +109,6 @@ namespace Bicicleteria.Backend.Data
                     Name = "Bicicleta Urbana",
                     Description = "Bicicleta cómoda y práctica para desplazamientos en ciudad con canasta delantera.",
                     Price = 449.99m,
-                    ImageUrl = "https://example.com/urbana-bike.jpg",
                     Category = "Urbana"
                 }
             );
