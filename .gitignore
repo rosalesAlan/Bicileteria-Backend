@@ -1,4 +1,4 @@
-# Visual Studio
+﻿# Visual Studio
 .vs/
 
 # Build results
@@ -22,10 +22,12 @@ artifacts/
 # VS Code
 .vscode/
 
-# Environment files (protege credenciales locales)
+# Environment files (protect local credentials)
+.env
+.env.local
 appsettings.Development.json
 *.local.json
+VERIFICACION.md
 
-# Sistema operativo
+# Operating system
 Thumbs.db
-Desktop.ini

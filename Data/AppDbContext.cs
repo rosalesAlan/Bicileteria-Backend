@@ -41,10 +41,11 @@ namespace Bicicleteria.Backend.Data
             // Configuración de la tabla Productos (anteriormente Products)
             modelBuilder.Entity<Product>().ToTable("productos");
             modelBuilder.Entity<Product>().HasKey(p => p.Id);
-            modelBuilder.Entity<Product>().Property(p => p.Nombre).IsRequired().HasMaxLength(200);
-            modelBuilder.Entity<Product>().Property(p => p.Descripcion).HasMaxLength(1000);
-            modelBuilder.Entity<Product>().Property(p => p.Precio).HasPrecision(10, 2);
-            modelBuilder.Entity<Product>().Property(p => p.Disponibilidad).HasDefaultValue(0);
+            modelBuilder.Entity<Product>().Property(p => p.Name).IsRequired().HasMaxLength(200);
+            modelBuilder.Entity<Product>().Property(p => p.Description).HasMaxLength(1000);
+            modelBuilder.Entity<Product>().Property(p => p.Price).HasPrecision(10, 2);
+            modelBuilder.Entity<Product>().Property(p => p.ImageUrl).HasMaxLength(500);
+            modelBuilder.Entity<Product>().Property(p => p.Category).HasMaxLength(100);
 
             // Generar hashes de contraseñas usando BCrypt
             var passwordHash1 = BCrypt.Net.BCrypt.HashPassword("Demo1234");
@@ -90,26 +91,29 @@ namespace Bicicleteria.Backend.Data
                 new Product
                 {
                     Id = 1,
-                    Nombre = "Bicicleta Mountain Bike",
-                    Descripcion = "Bicicleta de montaña de 26 pulgadas con suspensión delantera y frenos de disco.",
-                    Precio = 599.99m,
-                    Disponibilidad = 15
+                    Name = "Bicicleta Mountain Bike",
+                    Description = "Bicicleta de montaña de 26 pulgadas con suspensión delantera y frenos de disco.",
+                    Price = 599.99m,
+                    ImageUrl = "https://example.com/mountain-bike.jpg",
+                    Category = "Montaña"
                 },
                 new Product
                 {
                     Id = 2,
-                    Nombre = "Bicicleta Ruta",
-                    Descripcion = "Bicicleta de ruta ligera y rápida, ideal para carreteras. Marco de aluminio.",
-                    Precio = 799.99m,
-                    Disponibilidad = 10
+                    Name = "Bicicleta Ruta",
+                    Description = "Bicicleta de ruta ligera y rápida, ideal para carreteras. Marco de aluminio.",
+                    Price = 799.99m,
+                    ImageUrl = "https://example.com/ruta-bike.jpg",
+                    Category = "Ruta"
                 },
                 new Product
                 {
                     Id = 3,
-                    Nombre = "Bicicleta Urbana",
-                    Descripcion = "Bicicleta cómoda y práctica para desplazamientos en ciudad con canasta delantera.",
-                    Precio = 449.99m,
-                    Disponibilidad = 20
+                    Name = "Bicicleta Urbana",
+                    Description = "Bicicleta cómoda y práctica para desplazamientos en ciudad con canasta delantera.",
+                    Price = 449.99m,
+                    ImageUrl = "https://example.com/urbana-bike.jpg",
+                    Category = "Urbana"
                 }
             );
         }
