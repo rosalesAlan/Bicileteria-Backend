@@ -155,9 +155,10 @@ Bicileteria-Backend/
 | id | INTEGER PK | Identificador único |
 | name | VARCHAR(200) | Nombre del producto |
 | description | VARCHAR(1000) | Descripción |
-| price | NUMERIC(10,2) | Precio |
-| imageurl | VARCHAR(500) | URL de la imagen |
+| price | NUMERIC(10,2) | Precio unitario |
 | category | VARCHAR(100) | Categoría (Montaña, Ruta, Urbana, etc.) |
+
+**Nota:** Las imágenes se manejan por separado (no incluidas en la BD). Se acceden mediante un endpoint específico de files.
 
 ---
 
@@ -208,7 +209,6 @@ Bicileteria-Backend/
     "name": "Bicicleta Mountain Bike",
     "description": "Bicicleta de montaña de 26 pulgadas...",
     "price": 599.99,
-    "imageUrl": "https://...",
     "category": "Montaña"
   }
 ]
@@ -220,11 +220,12 @@ Bicileteria-Backend/
   "name": "Bicicleta BMX",
   "description": "Para trucos y acrobacias",
   "price": 299.99,
-  "imageUrl": "https://...",
   "category": "BMX"
 }
 ```
 **Response (201):** el producto creado, con su `id` asignado.
+
+> **Nota:** Las imágenes se manejan por separado, no incluidas en la respuesta JSON. Acceso mediante endpoint específico de files.
 
 ---
 
