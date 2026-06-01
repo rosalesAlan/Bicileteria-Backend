@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 
 namespace Bicicleteria.Backend.Controllers
 {
@@ -18,11 +19,13 @@ namespace Bicicleteria.Backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(AppDbContext context, IConfiguration configuration)
+        public AuthController(AppDbContext context, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
 
         [HttpPost("login")]
@@ -33,6 +36,7 @@ namespace Bicicleteria.Backend.Controllers
         {
             if (request == null || string.IsNullOrWhiteSpace(request.Mail) || string.IsNullOrWhiteSpace(request.Password))
             {
+                _logger.LogWarning("Intento de login con datos incompletos");
                 return BadRequest(new { message = "Mail y contraseña son requeridos" });
             }
 
@@ -40,6 +44,7 @@ namespace Bicicleteria.Backend.Controllers
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
+                _logger.LogWarning($"Intento de login fallido para: {request.Mail}");
                 return Unauthorized(new { message = "Credenciales inválidas" });
             }
 
@@ -53,6 +58,7 @@ namespace Bicicleteria.Backend.Controllers
                 Tipo = user.Tipo
             };
 
+            _logger.LogInformation($"Login exitoso para usuario: {user.Id} ({user.Mail})");
             return Ok(new LoginResponse { AccessToken = token, User = userDto });
         }
 
@@ -87,40 +93,90 @@ namespace Bicicleteria.Backend.Controllers
 
 
         [HttpPost("register")]
+        [AllowAnonymous]
+        [Produces("application/json")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-
-            //Verifico si el email ya existe
-            var emailExist = await _context.Usuarios.AnyAsync(u => u.Mail.ToLower() == request.Email.ToLower());
-
-            if (emailExist)
+            try
             {
-                return BadRequest(new {message = "El correo electronico ya está en uso"});
+                _logger.LogInformation($"Intento de registro para: {request.Email}");
+
+                // Validar contraseña fuerte
+                var passwordValidation = ValidatePassword(request.Password);
+                if (passwordValidation != null)
+                {
+                    _logger.LogWarning($"Registro fallido para {request.Email}: contraseña débil");
+                    return passwordValidation;
+                }
+
+                // Email duplicado (case-insensitive)
+                var emailExist = await _context.Usuarios
+                    .AnyAsync(u => u.Mail.ToLower() == request.Email.Trim().ToLower());
+                if (emailExist)
+                {
+                    _logger.LogWarning($"Intento de registro con email duplicado: {request.Email}");
+                    return BadRequest(new { message = "El correo electrónico ya está en uso" });
+                }
+
+                // Teléfono duplicado
+                var numeroExist = await _context.Usuarios
+                    .AnyAsync(u => u.NumeroTelefono == request.NumeroTelefono.Trim());
+                if (numeroExist)
+                {
+                    _logger.LogWarning($"Intento de registro con teléfono duplicado: {request.NumeroTelefono}");
+                    return BadRequest(new { message = "Este número de teléfono ya está en uso" });
+                }
+
+                // Crear nuevo usuario
+                var nuevoUsuario = new User
+                {
+                    Nombre = request.Nombre.Trim(),
+                    Apellido = request.Apellido.Trim(),
+                    Mail = request.Email.Trim().ToLower(),
+                    NumeroTelefono = request.NumeroTelefono.Trim(),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                    Tipo = "cliente"
+                };
+
+                _context.Usuarios.Add(nuevoUsuario);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Usuario registrado exitosamente: {nuevoUsuario.Id} ({nuevoUsuario.Mail})");
+
+                return Created(
+                    $"/api/auth/profile/{nuevoUsuario.Id}",
+                    new
+                    {
+                        userId = nuevoUsuario.Id,
+                        email = nuevoUsuario.Mail,
+                        message = "Usuario registrado exitosamente"
+                    }
+                );
             }
-
-            var numeroExist = await _context.Usuarios.AnyAsync(u => u.NumeroTelefono == request.NumeroTelefono);
-
-            if (numeroExist)
+            catch (DbUpdateException ex)
             {
-                return BadRequest (new {message = "Este numero de telefono ya está en uso"});
+                _logger.LogError($"Error de BD en registro: {ex.Message}");
+                return StatusCode(500, new { message = "Error al guardar en la base de datos" });
             }
-
-
-            //Creo el nuevo usuario si pasé lsa validaciones.
-            var NuevoUsuario = new User
+            catch (Exception ex)
             {
-                Nombre = request.Nombre,
-                Apellido = request.Apellido,
-                Mail = request.Email,
-                NumeroTelefono = request.NumeroTelefono,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Tipo = "cliente" //Por defecto ponemos que el nuevo usuario va a ser un cliente, no admin.
-                
-            };
-            //Agrego el usuario a la base de datos y guardo los cambios
-            _context.Usuarios.Add(NuevoUsuario); //Agrego el nuevo usuario a la tabla Usuarios
-            await _context.SaveChangesAsync(); //Guardo los cambios en la base de datos
-            return Created("", new { message = "Usuario registrado exitosamente" });
+                _logger.LogError($"Error inesperado en registro: {ex.Message}");
+                return StatusCode(500, new { message = "Error interno del servidor" });
+            }
+        }
+
+        private IActionResult ValidatePassword(string password)
+        {
+            if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
+                return BadRequest(new { message = "La contraseña debe tener mínimo 8 caracteres" });
+
+            if (!password.Any(char.IsUpper))
+                return BadRequest(new { message = "La contraseña debe contener mayúsculas (A-Z)" });
+
+            if (!password.Any(char.IsDigit))
+                return BadRequest(new { message = "La contraseña debe contener números (0-9)" });
+
+            return null; // Válida
         }
     }
 }
