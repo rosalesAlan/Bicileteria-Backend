@@ -16,7 +16,7 @@ namespace Bicicleteria.Backend.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.21")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -42,12 +42,6 @@ namespace Bicicleteria.Backend.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("description");
 
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("imageurl");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -69,7 +63,6 @@ namespace Bicicleteria.Backend.Migrations
                             Id = 1,
                             Category = "Montaña",
                             Description = "Bicicleta de montaña de 26 pulgadas con suspensión delantera y frenos de disco.",
-                            ImageUrl = "https://example.com/mountain-bike.jpg",
                             Name = "Bicicleta Mountain Bike",
                             Price = 599.99m
                         },
@@ -78,7 +71,6 @@ namespace Bicicleteria.Backend.Migrations
                             Id = 2,
                             Category = "Ruta",
                             Description = "Bicicleta de ruta ligera y rápida, ideal para carreteras. Marco de aluminio.",
-                            ImageUrl = "https://example.com/ruta-bike.jpg",
                             Name = "Bicicleta Ruta",
                             Price = 799.99m
                         },
@@ -87,7 +79,6 @@ namespace Bicicleteria.Backend.Migrations
                             Id = 3,
                             Category = "Urbana",
                             Description = "Bicicleta cómoda y práctica para desplazamientos en ciudad con canasta delantera.",
-                            ImageUrl = "https://example.com/urbana-bike.jpg",
                             Name = "Bicicleta Urbana",
                             Price = 449.99m
                         });
@@ -132,11 +123,11 @@ namespace Bicicleteria.Backend.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("passwordhash");
 
-                    b.Property<string>("Tipo")
+                    b.Property<string>("Rol")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
-                        .HasColumnName("tipo");
+                        .HasColumnName("rol");
 
                     b.HasKey("Id");
 
@@ -150,8 +141,8 @@ namespace Bicicleteria.Backend.Migrations
                             Mail = "admin@bicileteria.com",
                             Nombre = "Admin",
                             NumeroTelefono = "+34 900 000 001",
-                            PasswordHash = "$2a$11$eQL6KAHwVao.Iy3wGKpQReYVLBFtnTxHq5Lkn4ywdKjifD3OkQbSq",
-                            Tipo = "admin"
+                            PasswordHash = "$2a$11$aDMvxi19.4WXx6ICMLz6I.Y2kSuLiHpUWaTDS3WydVDamXXwwKLMe",
+                            Rol = "admin"
                         },
                         new
                         {
@@ -160,8 +151,8 @@ namespace Bicicleteria.Backend.Migrations
                             Mail = "usuario@bicileteria.com",
                             Nombre = "Usuario",
                             NumeroTelefono = "+34 900 000 002",
-                            PasswordHash = "$2a$11$7uqe8d1uvhIIZcnofxJOfeYsMJNxCt7Zer02rVbvUs0a98/NrOek6",
-                            Tipo = "vendedor"
+                            PasswordHash = "$2a$11$RAFttRFyiX2DhbUFGjQo/.OmvG9pK5RQG2pGLMNC8RMYW4GReiTV.",
+                            Rol = "vendedor"
                         },
                         new
                         {
@@ -170,8 +161,8 @@ namespace Bicicleteria.Backend.Migrations
                             Mail = "cliente@bicileteria.com",
                             Nombre = "Cliente",
                             NumeroTelefono = "+34 900 000 003",
-                            PasswordHash = "$2a$11$wAk9JixYhpfg/NVq2oR5w.TXKnfa1WYMfuXmCYtXgeJ30Sa88At2S",
-                            Tipo = "cliente"
+                            PasswordHash = "$2a$11$xqfICPou/6t.rdfEEaFAYe5Sf2RgTZz5UapBrgJnB.TPzFJxlOjrG",
+                            Rol = "cliente"
                         });
                 });
 #pragma warning restore 612, 618

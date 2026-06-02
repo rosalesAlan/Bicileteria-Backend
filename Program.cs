@@ -1,148 +1,113 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Bicicleteria.Backend.Data;
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
-// ===== CARGAR VARIABLES DE ENTORNO DESDE .env =====
-// DotNetEnv.Env.Load() debe ser llamado ANTES de construir la aplicación
-// para que las variables de entorno estén disponibles cuando se cargue la configuración
+// Cargar variables de entorno desde .env
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===== AGREGAR PROVEEDOR DE VARIABLES DE ENTORNO =====
-// Esto permite que ASP.NET Core use variables de entorno para reemplazar
-// valores en la configuración, incluyendo placeholders como ${DB_HOST}
+// Agregar variables de entorno a la configuraci�n
 builder.Configuration.AddEnvironmentVariables();
 
-// ===== HELPER: Expandir variables de entorno con sintaxis ${...} =====
-static string ExpandEnvironmentVariables(string? input)
-{
-    if (string.IsNullOrEmpty(input)) return input ?? string.Empty;
-
-    var pattern = @"\$\{([^}]+)\}";
-    return System.Text.RegularExpressions.Regex.Replace(input, pattern, match =>
-    {
-        var envVar = match.Groups[1].Value;
-        return System.Environment.GetEnvironmentVariable(envVar) ?? match.Value;
-    });
-}
-
-// ===== 1. DBCONTEXT - Configurar AppDbContext con PostgreSQL =====
-// Leer la cadena de conexión desde configuración y expandir variables de entorno
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrEmpty(connectionString))
-{
-    connectionString = ExpandEnvironmentVariables(connectionString);
-}
+// Connection string manual desde variables de entorno
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "BicicleteriaDB";
+var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString)
-);
+    options.UseNpgsql(connectionString));
 
-// ===== 2. AUTENTICACIÓN JWT =====
-// Leer configuración JWT desde appsettings.json y expandir variables de entorno
-var jwtKey = ExpandEnvironmentVariables(builder.Configuration["Jwt:Key"]) 
-    ?? throw new InvalidOperationException("JWT Key no configurada en appsettings.json o en .env");
-var jwtIssuer = ExpandEnvironmentVariables(builder.Configuration["Jwt:Issuer"]) 
-    ?? throw new InvalidOperationException("JWT Issuer no configurado en appsettings.json o en .env");
-var jwtAudience = ExpandEnvironmentVariables(builder.Configuration["Jwt:Audience"]) 
-    ?? throw new InvalidOperationException("JWT Audience no configurado en appsettings.json o en .env");
-
-// Para ExpireMinutes, expandir primero, luego parsear
-var jwtExpireMinutesStr = ExpandEnvironmentVariables(builder.Configuration["Jwt:ExpireMinutes"]);
-var jwtExpireMinutes = int.TryParse(jwtExpireMinutesStr, out var expireMinutes) 
-    ? expireMinutes 
-    : 60;
-
-// Configurar esquema de autenticación JWT
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        // Validar emisor
-        ValidateIssuer = true,
-        ValidIssuer = jwtIssuer,
-        
-        // Validar audiencia
-        ValidateAudience = true,
-        ValidAudience = jwtAudience,
-        
-        // Validar tiempo de expiración
-        ValidateLifetime = true,
-        
-        // Validar clave de firma
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-    };
-});
-
-// ===== 3. AUTORIZACIÓN =====
-builder.Services.AddAuthorization();
-
-// ===== 4. CORS - Política "AllowAll" para pruebas locales =====
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy
-            .AllowAnyOrigin()        // Permitir cualquier origen
-            .AllowAnyMethod()        // Permitir cualquier método (GET, POST, PUT, DELETE, etc.)
-            .AllowAnyHeader();       // Permitir cualquier cabecera
-    });
-});
-
-// ===== 5. SWAGGER - Documentación API =====
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Swagger
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "Bicicletería Backend API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Bicicleteria API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header usando Bearer scheme",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] { }
+        }
+    });
 });
 
-// ===== 6. CONTROLADORES =====
-builder.Services.AddControllers();
+// JWT Authentication
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
+{
+    throw new InvalidOperationException("JWT_KEY debe tener al menos 32 caracteres y estar definida en .env");
+}
+var key = Encoding.UTF8.GetBytes(jwtKey);
 
-// ===== 7. CONSTRUIR LA APLICACIÓN =====
+var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "https://bicicleteria.localhost";
+var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "bicicleteria-app";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
+            ValidateAudience = true,
+            ValidAudience = audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
-// ===== PIPELINE DE MIDDLEWARE =====
-
-// Archivos estáticos (necesario para Swagger UI)
-app.UseStaticFiles();
-
-// Usar Swagger (disponible en /swagger/index.html en desarrollo)
-//if (app.Environment.IsDevelopment()) !!!!!!!!
-
-// por ahora para testear Buscaremos que el sistema funcione en producción también, luego se puede restringir a desarrollo
-if(true)
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bicicletería Backend API V1");
-        c.RoutePrefix = string.Empty; // Hacer Swagger la página principal
-        c.DefaultModelsExpandDepth(2);
-        c.DefaultModelExpandDepth(2);
-    });
+    app.UseSwaggerUI();
 }
 
-// Usar CORS
+app.UseHttpsRedirection();
 app.UseCors("AllowAll");
-
-// Usar autenticación
 app.UseAuthentication();
-
-// Usar autorización
 app.UseAuthorization();
-
-// Mapear controladores
 app.MapControllers();
+
+//var hash = BCrypt.Net.BCrypt.HashPassword("bnka5678");
+//Console.WriteLine("COPIA ESTE HASH: " + hash);
 
 app.Run();
