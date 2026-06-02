@@ -55,7 +55,7 @@ namespace Bicicleteria.Backend.Controllers
                 Nombre = user.Nombre,
                 Apellido = user.Apellido,
                 Mail = user.Mail,
-                Tipo = user.Tipo
+                Rol = user.Rol
             };
 
             _logger.LogInformation($"Login exitoso para usuario: {user.Id} ({user.Mail})");
@@ -64,10 +64,10 @@ namespace Bicicleteria.Backend.Controllers
 
         private string GenerateJwtToken(User user)
         {
-            var key = _configuration["Jwt:Key"];
-            var issuer = _configuration["Jwt:Issuer"];
-            var audience = _configuration["Jwt:Audience"];
-            var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"] ?? "60");
+            var key = _configuration["JWT_KEY"];
+            var issuer = _configuration["JWT_ISSER"];
+            var audience = _configuration["JWT_AUDIENCE"];
+            var expireMinutes = int.Parse(_configuration["JWT_EXPIRE_MINUTES"] ?? "60");
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -77,7 +77,7 @@ namespace Bicicleteria.Backend.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Mail),
                 new Claim(ClaimTypes.Name, $"{user.Nombre} {user.Apellido}"),
-                new Claim("Tipo", user.Tipo)
+                new Claim("Rol", user.Rol)
             };
 
             var token = new JwtSecurityToken(
@@ -135,7 +135,7 @@ namespace Bicicleteria.Backend.Controllers
                     Mail = request.Email.Trim().ToLower(),
                     NumeroTelefono = request.NumeroTelefono.Trim(),
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                    Tipo = "cliente"
+                    Rol = "cliente"
                 };
 
                 _context.Usuarios.Add(nuevoUsuario);
@@ -180,6 +180,5 @@ namespace Bicicleteria.Backend.Controllers
         }
     }
 }
-
 
 

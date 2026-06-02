@@ -35,7 +35,7 @@ namespace Bicicleteria.Backend.Data
             modelBuilder.Entity<User>().Property(u => u.Apellido).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<User>().Property(u => u.NumeroTelefono).HasMaxLength(20);
             modelBuilder.Entity<User>().Property(u => u.Mail).IsRequired().HasMaxLength(200);
-            modelBuilder.Entity<User>().Property(u => u.Tipo).IsRequired().HasMaxLength(50);
+            modelBuilder.Entity<User>().Property(u => u.Rol).IsRequired().HasMaxLength(50);
             modelBuilder.Entity<User>().Property(u => u.PasswordHash).IsRequired().HasMaxLength(500);
 
             // Configuración de la tabla Productos (anteriormente Products)
@@ -60,7 +60,7 @@ namespace Bicicleteria.Backend.Data
                     Apellido = "Sistema",
                     NumeroTelefono = "+34 900 000 001",
                     Mail = "admin@bicileteria.com",
-                    Tipo = "admin",
+                    Rol = "admin",
                     PasswordHash = passwordHash1
                 },
                 new User
@@ -70,7 +70,7 @@ namespace Bicicleteria.Backend.Data
                     Apellido = "Vendedor",
                     NumeroTelefono = "+34 900 000 002",
                     Mail = "usuario@bicileteria.com",
-                    Tipo = "vendedor",
+                    Rol = "vendedor",
                     PasswordHash = passwordHash2
                 },
                 new User
@@ -80,7 +80,7 @@ namespace Bicicleteria.Backend.Data
                     Apellido = "Ejemplo",
                     NumeroTelefono = "+34 900 000 003",
                     Mail = "cliente@bicileteria.com",
-                    Tipo = "cliente",
+                    Rol = "cliente",
                     PasswordHash = passwordHash3
                 }
             );

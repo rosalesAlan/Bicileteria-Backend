@@ -7,7 +7,7 @@ namespace Bicicleteria.Backend.Models
         public string Apellido { get; set; }
         public string NumeroTelefono { get; set; }
         public string Mail { get; set; }
-        public string Tipo { get; set; }  // 'admin' o 'cliente'
+        public string Rol { get; set; }  // 'admin', 'vendedor' o 'cliente'
         public string PasswordHash { get; set; }
     }
 }

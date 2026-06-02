@@ -119,3 +119,9 @@ C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\obj\Debug\ne
 C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\obj\Debug\net8.0\Bicicleteria.Backend.pdb
 C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\obj\Debug\net8.0\Bicicleteria.Backend.genruntimeconfig.cache
 C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\obj\Debug\net8.0\ref\Bicicleteria.Backend.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\global.json
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\Npgsql.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\obj\Debug\net8.0\swae.build.ex.cache
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\DotNetEnv.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\Superpower.dll
