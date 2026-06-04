@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Bicicleteria.Backend.Data;
 using Bicicleteria.Backend.Models;
 
+
 namespace Bicicleteria.Backend.Controllers
 {
     [ApiController]
@@ -22,7 +23,7 @@ namespace Bicicleteria.Backend.Controllers
         [Produces("application/json")]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            var products = await _context.Productos.ToListAsync();
+            var products = await _context.Products.ToListAsync();
             return Ok(products);
         }
 
@@ -36,7 +37,7 @@ namespace Bicicleteria.Backend.Controllers
                 return BadRequest(new { message = "El nombre del producto es obligatorio." });
             }
 
-            _context.Productos.Add(product);
+            _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetProducts), new { id = product.Id }, product);

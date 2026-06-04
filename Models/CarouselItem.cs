@@ -1,15 +1,11 @@
 namespace Bicicleteria.Backend.Models;
 
-
-
-public class Product
+public class CarouselItem
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public decimal Price { get; set; }
-    public string? ImageUrl { get; set; }
     public int? CategoryId { get; set; }
     public Category? Category { get; set; }
-    public bool Availability { get; set; }
+    public int Order { get; set; }
+    public string? ImageUrl { get; set; }
 }
