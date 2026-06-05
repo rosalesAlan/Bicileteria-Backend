@@ -125,3 +125,9 @@ C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\ne
 C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\obj\Debug\net8.0\swae.build.ex.cache
 C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\DotNetEnv.dll
 C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\Superpower.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\DnsClient.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\MongoDB.Bson.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\MongoDB.Driver.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\SharpCompress.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\Snappier.dll
+C:\Users\Alan Rosales\Universidad\Programcion 3\Bicileteria-Backend\bin\Debug\net8.0\ZstdSharp.dll
