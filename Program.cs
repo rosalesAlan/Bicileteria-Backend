@@ -1,10 +1,12 @@
 using System.Text;
+using Bicicleteria.Backend.Cache;
 using Bicicleteria.Backend.Data;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 // Cargar variables de entorno desde .env
 Env.Load();
@@ -14,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Agregar variables de entorno a la configuración
 builder.Configuration.AddEnvironmentVariables();
 
-// Connection string manual desde variables de entorno
+// ===== DBCONTEXT - PostgreSQL =====
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
 var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
 var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "BicicleteriaDB";
@@ -25,10 +27,17 @@ var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username=
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+// ===== MONGODB - Servicio de caché =====
+var mongoDbConnectionString = builder.Configuration.GetConnectionString("MongoDb") ?? "mongodb://localhost:27017";
+var mongoClient = new MongoClient(mongoDbConnectionString);
+builder.Services.AddSingleton<IMongoClient>(mongoClient);
+builder.Services.AddScoped<IMongoCacheService, MongoCacheService>();
+
+// ===== CONTROLADORES =====
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Swagger
+// ===== SWAGGER =====
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Bicicleteria API", Version = "v1" });
@@ -56,7 +65,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// JWT Authentication
+// ===== JWT AUTHENTICATION =====
 var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY");
 if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
 {
@@ -83,6 +92,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// ===== CORS =====
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
@@ -106,8 +116,5 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-//var hash = BCrypt.Net.BCrypt.HashPassword("bnka5678");
-//Console.WriteLine("COPIA ESTE HASH: " + hash);
 
 app.Run();
