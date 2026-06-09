@@ -10,7 +10,6 @@ namespace Bicicleteria.Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -29,9 +28,10 @@ namespace Bicicleteria.Backend.Controllers
 
         /// <summary>
         /// Obtiene todos los productos desde caché de MongoDB (si están frescos)
-        /// o desde PostgreSQL si la caché ha expirado.
+        /// o desde PostgreSQL si la caché ha expirado. Endpoint público.
         /// </summary>
         [HttpGet]
+        [AllowAnonymous]
         [Produces("application/json")]
         public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
         {
@@ -49,9 +49,36 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Crear un nuevo producto e invalidar la caché.
+        /// Obtiene un producto por ID desde caché. Endpoint público.
+        /// </summary>
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        public async Task<ActionResult<ProductDto>> GetProductById(int id)
+        {
+            try
+            {
+                var products = await _cacheService.GetProductsAsync();
+                var product = products.FirstOrDefault(p => p.Id == id);
+
+                if (product == null)
+                {
+                    return NotFound(new { message = "Producto no encontrado" });
+                }
+                return Ok(product);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error al obtener producto: {ex.Message}");
+                return StatusCode(500, new { message = "Error al obtener producto" });
+            }
+        }
+
+        /// <summary>
+        /// Crear un nuevo producto e invalidar la caché. Solo para administradores.
         /// </summary>
         [HttpPost]
+        [Authorize(Roles = "admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
@@ -70,7 +97,7 @@ namespace Bicicleteria.Backend.Controllers
                 await _cacheService.InvalidateAsync();
 
                 _logger.LogInformation($"Producto creado: {product.Id}. Caché invalidada.");
-                return CreatedAtAction(nameof(GetProducts), new { id = product.Id }, product);
+                return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
             }
             catch (Exception ex)
             {
@@ -80,32 +107,10 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Obtiene un producto por ID.
-        /// </summary>
-        [HttpGet("{id}")]
-        [Produces("application/json")]
-        public async Task<ActionResult<Product>> GetProductById(int id)
-        {
-            try
-            {
-                var product = await _context.Products.FindAsync(id);
-                if (product == null)
-                {
-                    return NotFound(new { message = "Producto no encontrado" });
-                }
-                return Ok(product);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al obtener producto: {ex.Message}");
-                return StatusCode(500, new { message = "Error al obtener producto" });
-            }
-        }
-
-        /// <summary>
-        /// Actualiza un producto e invalida la caché.
+        /// Actualiza un producto e invalida la caché. Solo para administradores.
         /// </summary>
         [HttpPut("{id}")]
+        [Authorize(Roles = "admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
@@ -142,9 +147,10 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Elimina un producto e invalida la caché.
+        /// Elimina un producto e invalida la caché. Solo para administradores.
         /// </summary>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
@@ -172,12 +178,12 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Endpoint de diagnóstico para ver el estado del caché de MongoDB.
+        /// Obtiene el documento de caché completo de MongoDB. Solo para administradores.
         /// </summary>
-        [HttpGet("cache/status")]
-        [AllowAnonymous]
+        [HttpGet("cached")]
+        [Authorize(Roles = "admin")]
         [Produces("application/json")]
-        public async Task<IActionResult> GetCacheStatus()
+        public async Task<IActionResult> GetCachedDocument()
         {
             try
             {
@@ -194,7 +200,8 @@ namespace Bicicleteria.Backend.Controllers
                 return Ok(new
                 {
                     status = "ok",
-                    cacheId = cacheDoc.Id,
+                    id = cacheDoc.Id,
+                    productos = cacheDoc.Productos,
                     productosCacheados = cacheDoc.Productos.Count,
                     fechaActualizacion = cacheDoc.FechaActualizacion,
                     ttlMinutos = cacheDoc.TtlMinutos,
@@ -204,27 +211,36 @@ namespace Bicicleteria.Backend.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error obteniendo estado de caché: {ex.Message}");
-                return StatusCode(500, new { message = "Error obteniendo estado de caché", error = ex.Message });
+                _logger.LogError($"Error obteniendo documento de caché: {ex.Message}");
+                return StatusCode(500, new { message = "Error obteniendo documento de caché", error = ex.Message });
             }
         }
 
         /// <summary>
-        /// Endpoint para invalidar manualmente la caché.
+        /// Fuerza la recarga del caché desde la base de datos. Solo para administradores.
         /// </summary>
-        [HttpPost("cache/invalidate")]
-        [AllowAnonymous]
-        public async Task<IActionResult> InvalidateCache()
+        [HttpPost("sync-cache")]
+        [Authorize(Roles = "admin")]
+        [Produces("application/json")]
+        public async Task<IActionResult> SyncCache()
         {
             try
             {
                 await _cacheService.InvalidateAsync();
-                return Ok(new { message = "Caché invalidada correctamente" });
+                var products = await _cacheService.GetProductsAsync();
+
+                var cacheDoc = await _cacheService.GetCacheDocumentAsync();
+                return Ok(new 
+                { 
+                    message = "Caché recargada correctamente",
+                    productosCacheados = products.Count(),
+                    cacheDocument = cacheDoc
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error invalidando caché: {ex.Message}");
-                return StatusCode(500, new { message = "Error invalidando caché", error = ex.Message });
+                _logger.LogError($"Error sincronizando caché: {ex.Message}");
+                return StatusCode(500, new { message = "Error sincronizando caché", error = ex.Message });
             }
         }
     }
