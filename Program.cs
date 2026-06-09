@@ -222,4 +222,7 @@ Console.WriteLine("[STARTUP] ========== APLICACION LISTA ==========");
 Console.WriteLine("[STARTUP] Swagger disponible en: https://localhost:7164/swagger");
 Console.WriteLine("[STARTUP] Ejecutando aplicacion...");
 
+var passwordHash1 = BCrypt.Net.BCrypt.HashPassword("Demo1234");
+Console.WriteLine($"Hash de contraseña para Demo1234: {passwordHash1}");
+
 app.Run();

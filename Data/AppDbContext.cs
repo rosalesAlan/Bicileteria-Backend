@@ -93,6 +93,7 @@ namespace Bicicleteria.Backend.Data
             var passwordHash2 = BCrypt.Net.BCrypt.HashPassword("Demo5678");
             var passwordHash3 = BCrypt.Net.BCrypt.HashPassword("Demo9012");
 
+            Console.WriteLine($"Hash de contraseña para Demo1234: {passwordHash1}");
             // Datos semilla para Roles
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 3, Name = "Admin" },
