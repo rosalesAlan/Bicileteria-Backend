@@ -35,16 +35,15 @@ namespace Bicicleteria.Backend.Controllers
 
                 var carouselItems = await _context.CarouselItems
                     .Include(c => c.Category)
-                    .OrderBy(c => c.Order)
+                    .OrderBy(c => c.Range   )
                     .ToListAsync();
 
                 var result = carouselItems.Select(c => new
                 {
                     c.Id,
                     c.Name,
-                    c.ImageUrl,
-                    c.Order,
-                    rango = c.Order,
+                    c.Range,
+                    rango = c.Range,
                     category = c.Category != null ? new { c.Category.Id, c.Category.Name } : null,
                     categoryId = c.CategoryId
                 }).ToList();
@@ -81,9 +80,8 @@ namespace Bicicleteria.Backend.Controllers
                 {
                     carouselItem.Id,
                     carouselItem.Name,
-                    carouselItem.ImageUrl,
-                    carouselItem.Order,
-                    rango = carouselItem.Order,
+                    carouselItem.Range,
+                    rango = carouselItem.Range,
                     category = carouselItem.Category != null ? new { carouselItem.Category.Id, carouselItem.Category.Name } : null,
                     categoryId = carouselItem.CategoryId
                 };
@@ -134,9 +132,8 @@ namespace Bicicleteria.Backend.Controllers
                 {
                     carouselItem.Id,
                     carouselItem.Name,
-                    carouselItem.ImageUrl,
-                    carouselItem.Order,
-                    rango = carouselItem.Order,
+                    carouselItem.Range,
+                    rango = carouselItem.Range,
                     categoryId = carouselItem.CategoryId,
                     category = carouselItem.Category != null ? new { carouselItem.Category.Id, carouselItem.Category.Name } : null
                 };
@@ -185,8 +182,7 @@ namespace Bicicleteria.Backend.Controllers
                 }
 
                 existingItem.Name = carouselItem.Name;
-                existingItem.ImageUrl = carouselItem.ImageUrl;
-                existingItem.Order = carouselItem.Order;
+                existingItem.Range = carouselItem.Range;
                 existingItem.CategoryId = carouselItem.CategoryId;
 
                 _context.CarouselItems.Update(existingItem);

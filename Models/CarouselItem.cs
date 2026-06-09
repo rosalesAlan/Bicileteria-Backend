@@ -6,6 +6,6 @@ public class CarouselItem
     public string Name { get; set; } = string.Empty;
     public int? CategoryId { get; set; }
     public Category? Category { get; set; }
-    public int Order { get; set; }
-    public string? ImageUrl { get; set; }
+    public int Range { get; set; }
+
 }

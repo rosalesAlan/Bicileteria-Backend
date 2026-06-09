@@ -188,25 +188,38 @@ using (var scope = app.Services.CreateScope())
 }
 
 
-if (app.Environment.IsDevelopment())
+// ===== SWAGGER UI =====
+Console.WriteLine("[STARTUP] ========== CONFIGURANDO SWAGGER UI ==========");
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Bicicleteria API v1");
+    c.DocumentTitle = "Bicicleteria API Documentation";
+    c.DefaultModelsExpandDepth(0);
+});
+Console.WriteLine("[STARTUP] Swagger UI configurado en /swagger");
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
-{
+Console.WriteLine($"[STARTUP] Entorno: {app.Environment.EnvironmentName}");
 
-}
-
-Console.WriteLine($"[STARTUP] Entorno: {app.Environment.IsDevelopment()} - Swagger Development?");
-
-
+// ===== MIDDLEWARES EN ORDEN CORRECTO =====
+Console.WriteLine("[STARTUP] ========== APLICANDO MIDDLEWARES ==========");
 app.UseHttpsRedirection();
-app.UseCors("AllowAll");
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
+Console.WriteLine("[STARTUP] HTTPS Redirection habilitado");
 
+app.UseCors("AllowAll");
+Console.WriteLine("[STARTUP] CORS aplicado (AllowAll)");
+
+app.UseAuthentication();
+Console.WriteLine("[STARTUP] Autenticación habilitada");
+
+app.UseAuthorization();
+Console.WriteLine("[STARTUP] Autorización habilitada");
+
+app.MapControllers();
+Console.WriteLine("[STARTUP] Controladores mapeados");
+
+Console.WriteLine("[STARTUP] ========== APLICACION LISTA ==========");
+Console.WriteLine("[STARTUP] Swagger disponible en: https://localhost:7164/swagger");
+Console.WriteLine("[STARTUP] Ejecutando aplicacion...");
 
 app.Run();
