@@ -39,6 +39,7 @@ namespace Bicicleteria.Backend.Controllers
                 _logger.LogWarning("Intento de login con datos incompletos");
                 return BadRequest(new { message = "Email y contraseña son requeridos" });
             }
+            
 
             var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == request.Email);
 
@@ -128,10 +129,10 @@ namespace Bicicleteria.Backend.Controllers
                 }
 
                 // Obtener rol por defecto (Customer)
-                var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
+                var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == 4); // name = cliente; id = 4
                 if (customerRole == null)
                 {
-                    _logger.LogError("No se encontró el rol 'Customer' en la base de datos");
+                    _logger.LogError("No se encontró el rol 'Cliente' en la base de datos");
                     return StatusCode(500, new { message = "Error al asignar rol de usuario" });
                 }
 
