@@ -69,7 +69,6 @@ namespace Bicicleteria.Backend.Cache
                         Price = p.Price,
                         ImageUrl = p.ImageUrl,
                         CategoryId = p.CategoryId,
-                        Category = p.Category != null ? p.Category.Name : null,
                         Availability = p.Availability
                     })
                     .ToListAsync();

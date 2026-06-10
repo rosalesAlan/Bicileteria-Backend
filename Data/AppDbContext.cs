@@ -70,11 +70,10 @@ namespace Bicicleteria.Backend.Data
             modelBuilder.Entity<Product>().Property(p => p.Description).HasMaxLength(1000);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasPrecision(10, 2);
             modelBuilder.Entity<Product>().Property(p => p.ImageUrl).HasMaxLength(500);
-            modelBuilder.Entity<Product>()
-                .HasOne(p => p.Category)
-                .WithMany()
-                .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Product>().Property(p => p.Availability).IsRequired();
+            modelBuilder.Entity<Product>().Property(p => p.CategoryId).IsRequired();
+
+
 
 
             // Configuración de la tabla CarouselItems
@@ -93,7 +92,7 @@ namespace Bicicleteria.Backend.Data
             var passwordHash2 = BCrypt.Net.BCrypt.HashPassword("Demo5678");
             var passwordHash3 = BCrypt.Net.BCrypt.HashPassword("Demo9012");
 
-            Console.WriteLine($"Hash de contraseña para Demo1234: {passwordHash1}");
+      
             // Datos semilla para Roles
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 3, Name = "Admin" },

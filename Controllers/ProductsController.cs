@@ -75,20 +75,30 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Crear un nuevo producto e invalidar la caché. Solo para administradores.
+        /// Crear un nuevo producto e invalidar la caché. Solo para Administradores.
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
-        public async Task<ActionResult<Product>> CreateProduct([FromBody] Product product)
+        public async Task<ActionResult<Product>> CreateProduct([FromBody] CreateProductDto CreateProductDto)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(product.Name))
+                if (string.IsNullOrWhiteSpace(CreateProductDto.Name))
                 {
                     return BadRequest(new { message = "El nombre del producto es obligatorio." });
                 }
+
+                var product = new Product
+                {
+                    Name = CreateProductDto.Name,
+                    Description = CreateProductDto.Description,
+                    Price = CreateProductDto.Price,
+                    ImageUrl = CreateProductDto.ImageUrl,
+                    CategoryId = CreateProductDto.CategoryId,
+                    Availability = CreateProductDto.Availability
+                };
 
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
@@ -96,8 +106,9 @@ namespace Bicicleteria.Backend.Controllers
                 // Invalidar caché tras crear nuevo producto
                 await _cacheService.InvalidateAsync();
 
-                _logger.LogInformation($"Producto creado: {product.Id}. Caché invalidada.");
-                return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
+                _logger.LogInformation($"Producto creado: {product.Id} - {product.Name}. Caché invalidada.");
+
+                return Ok(product); // retorna
             }
             catch (Exception ex)
             {
@@ -107,10 +118,10 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Actualiza un producto e invalida la caché. Solo para administradores.
+        /// Actualiza un producto e invalida la caché. Solo para Administradores.
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
@@ -147,10 +158,10 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Elimina un producto e invalida la caché. Solo para administradores.
+        /// Elimina un producto e invalida la caché. Solo para Administradores.
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
@@ -178,10 +189,10 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Obtiene el documento de caché completo de MongoDB. Solo para administradores.
+        /// Obtiene el documento de caché completo de MongoDB. Solo para Administradores.
         /// </summary>
         [HttpGet("cached")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         public async Task<IActionResult> GetCachedDocument()
         {
@@ -217,10 +228,10 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
-        /// Fuerza la recarga del caché desde la base de datos. Solo para administradores.
+        /// Fuerza la recarga del caché desde la base de datos. Solo para Administradores.
         /// </summary>
         [HttpPost("sync-cache")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         public async Task<IActionResult> SyncCache()
         {

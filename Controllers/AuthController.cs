@@ -66,7 +66,7 @@ namespace Bicicleteria.Backend.Controllers
         private string GenerateJwtToken(User user)
         {
             var key = _configuration["JWT_KEY"];
-            var issuer = _configuration["JWT_ISSER"];
+            var issuer = _configuration["JWT_ISSUER"];
             var audience = _configuration["JWT_AUDIENCE"];
             var expireMinutes = int.Parse(_configuration["JWT_EXPIRE_MINUTES"] ?? "60");
 
@@ -78,8 +78,9 @@ namespace Bicicleteria.Backend.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new Claim("Role", user.Role.Name)
+                new Claim("role", user.Role.Name)
             };
+            Console.WriteLine($"Generando JWT para usuario {user.Id} ({user.Email}), rol: {user.Role.Name}");
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
