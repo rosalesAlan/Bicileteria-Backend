@@ -39,6 +39,7 @@ namespace Bicicleteria.Backend.Controllers
                 _logger.LogWarning("Intento de login con datos incompletos");
                 return BadRequest(new { message = "Email y contraseña son requeridos" });
             }
+            
 
             var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == request.Email);
 
@@ -65,10 +66,9 @@ namespace Bicicleteria.Backend.Controllers
         private string GenerateJwtToken(User user)
         {
             var key = _configuration["JWT_KEY"];
-            var issuer = _configuration["JWT_ISSER"];
+            var issuer = _configuration["JWT_ISSUER"];
             var audience = _configuration["JWT_AUDIENCE"];
             var expireMinutes = int.Parse(_configuration["JWT_EXPIRE_MINUTES"] ?? "60");
-
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -77,8 +77,10 @@ namespace Bicicleteria.Backend.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new Claim("Role", user.Role.Name)
+                new Claim(ClaimTypes.Role, user.Role.Name)
             };
+            Console.WriteLine($"Generando JWT para usuario {user.Id} ({user.Email}), rol: {user.Role.Name} roltype");
+
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
@@ -128,10 +130,10 @@ namespace Bicicleteria.Backend.Controllers
                 }
 
                 // Obtener rol por defecto (Customer)
-                var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
+                var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == 4); // name = cliente; id = 4
                 if (customerRole == null)
                 {
-                    _logger.LogError("No se encontró el rol 'Customer' en la base de datos");
+                    _logger.LogError("No se encontró el rol 'Cliente' en la base de datos");
                     return StatusCode(500, new { message = "Error al asignar rol de usuario" });
                 }
 
@@ -183,7 +185,7 @@ namespace Bicicleteria.Backend.Controllers
 
             if (!password.Any(char.IsDigit))
                 return BadRequest(new { message = "La contraseña debe contener números (0-9)" });
-
+            
             return null; // Válida
         }
     }

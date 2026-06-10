@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Bicicleteria.Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c4b84227bacce4dbd62b28a9d3146a4a790094b8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2e31a1f2ee3314885ddf6537136264bc6ab082fc")]
 [assembly: System.Reflection.AssemblyProductAttribute("Bicicleteria.Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Bicicleteria.Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

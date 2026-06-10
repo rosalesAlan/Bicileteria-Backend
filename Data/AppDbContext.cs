@@ -45,7 +45,7 @@ namespace Bicicleteria.Backend.Data
             modelBuilder.Entity<Role>().Property(r => r.Name).IsRequired().HasMaxLength(100);
 
             // Configuración de la tabla Users
-            modelBuilder.Entity<User>().ToTable("users");
+            modelBuilder.Entity<User>().ToTable("usuarios");
             modelBuilder.Entity<User>().HasKey(u => u.Id);
             modelBuilder.Entity<User>().Property(u => u.FirstName).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<User>().Property(u => u.LastName).IsRequired().HasMaxLength(100);
@@ -59,67 +59,52 @@ namespace Bicicleteria.Backend.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configuración de la tabla Categories
-            modelBuilder.Entity<Category>().ToTable("categories");
+            modelBuilder.Entity<Category>().ToTable("categoria");
             modelBuilder.Entity<Category>().HasKey(c => c.Id);
             modelBuilder.Entity<Category>().Property(c => c.Name).IsRequired().HasMaxLength(200);
 
             // Configuración de la tabla Products
-            modelBuilder.Entity<Product>().ToTable("products");
+            modelBuilder.Entity<Product>().ToTable("producto");
             modelBuilder.Entity<Product>().HasKey(p => p.Id);
             modelBuilder.Entity<Product>().Property(p => p.Name).IsRequired().HasMaxLength(200);
             modelBuilder.Entity<Product>().Property(p => p.Description).HasMaxLength(1000);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasPrecision(10, 2);
             modelBuilder.Entity<Product>().Property(p => p.ImageUrl).HasMaxLength(500);
-            modelBuilder.Entity<Product>()
-                .HasOne(p => p.Category)
-                .WithMany()
-                .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Product>().Property(p => p.Availability).IsRequired();
+            modelBuilder.Entity<Product>().Property(p => p.CategoryId).IsRequired();
+
+
+
 
             // Configuración de la tabla CarouselItems
-            modelBuilder.Entity<CarouselItem>().ToTable("carousel_items");
+            modelBuilder.Entity<CarouselItem>().ToTable("carrusel");
             modelBuilder.Entity<CarouselItem>().HasKey(c => c.Id);
             modelBuilder.Entity<CarouselItem>().Property(c => c.Name).IsRequired().HasMaxLength(200);
-            modelBuilder.Entity<CarouselItem>().Property(c => c.ImageUrl).HasMaxLength(500);
-            modelBuilder.Entity<CarouselItem>()
-                .HasOne(c => c.Category)
-                .WithMany()
-                .HasForeignKey(c => c.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<CarouselItem>().Property(c => c.Range).HasColumnName("order").HasDefaultValue(0);
 
             // Generar hashes de contraseñas usando BCrypt
             var passwordHash1 = BCrypt.Net.BCrypt.HashPassword("Demo1234");
-            var passwordHash2 = BCrypt.Net.BCrypt.HashPassword("Demo1234");
-            var passwordHash3 = BCrypt.Net.BCrypt.HashPassword("Demo1234");
+            var passwordHash2 = BCrypt.Net.BCrypt.HashPassword("Demo5678");
+            var passwordHash3 = BCrypt.Net.BCrypt.HashPassword("Demo9012");
 
+      
             // Datos semilla para Roles
             modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, Name = "Admin" },
-                new Role { Id = 2, Name = "Vendor" },
-                new Role { Id = 3, Name = "Customer" }
+                new Role { Id = 3, Name = "Admin" },
+                new Role { Id = 4, Name = "Cliente" }
             );
 
             // Datos semilla para Users
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
-                    Id = 1,
-                    FirstName = "Admin",
-                    LastName = "System",
-                    Email = "admin@bicileteria.com",
-                    PhoneNumber = "+34 900 000 001",
-                    RoleId = 1,
-                    PasswordHash = passwordHash1
-                },
-                new User
-                {
                     Id = 2,
-                    FirstName = "User",
-                    LastName = "Vendor",
-                    Email = "vendor@bicileteria.com",
-                    PhoneNumber = "+34 900 000 002",
-                    RoleId = 2,
-                    PasswordHash = passwordHash2
+                    FirstName = "Admin",
+                    LastName = "Sistema",
+                    Email = "admin@bicileteria.com",
+                    PhoneNumber = "123456789",
+                    RoleId = 3,
+                    PasswordHash = passwordHash1
                 },
                 new User
                 {
@@ -127,24 +112,35 @@ namespace Bicicleteria.Backend.Data
                     FirstName = "Client",
                     LastName = "Example",
                     Email = "client@bicileteria.com",
+                    PhoneNumber = "+34 900 000 002",
+                    RoleId = 4,
+                    PasswordHash = passwordHash2
+                },
+                new User
+                {
+                    Id = 4,
+                    FirstName = "Client",
+                    LastName = "Example",
+                    Email = "client@bicileteria.com",
                     PhoneNumber = "+34 900 000 003",
-                    RoleId = 3,
+                    RoleId = 4,
                     PasswordHash = passwordHash3
                 }
             );
 
             // Datos semilla para Categories
             modelBuilder.Entity<Category>().HasData(
-                new Category { Id = 1, Name = "Mountain" },
-                new Category { Id = 2, Name = "Road" },
-                new Category { Id = 3, Name = "Urban" }
+                new Category { Id = 1, Name = "Todas" },
+                new Category { Id = 2, Name = "Mountain" },
+                new Category { Id = 3, Name = "Road" },
+                new Category { Id = 4, Name = "Urban" }
             );
 
             // Datos semilla para Products
             modelBuilder.Entity<Product>().HasData(
                 new Product
                 {
-                    Id = 1,
+                    Id = 2,
                     Name = "Mountain Bike 26",
                     Description = "26-inch mountain bike with front suspension and disc brakes.",
                     Price = 599.99m,
@@ -153,7 +149,7 @@ namespace Bicicleteria.Backend.Data
                 },
                 new Product
                 {
-                    Id = 2,
+                    Id = 3,
                     Name = "Road Bike",
                     Description = "Lightweight and fast road bike, ideal for highways. Aluminum frame.",
                     Price = 799.99m,
@@ -162,7 +158,7 @@ namespace Bicicleteria.Backend.Data
                 },
                 new Product
                 {
-                    Id = 3,
+                    Id = 4,
                     Name = "Urban Bike",
                     Description = "Comfortable and practical bike for city commuting with front basket.",
                     Price = 449.99m,
@@ -177,22 +173,22 @@ namespace Bicicleteria.Backend.Data
                 {
                     Id = 1,
                     Name = "Mountain Bike Promotion",
-                    CategoryId = 1,
-                    Order = 1
+                    CategoryId = 2,
+                    Range = 10
                 },
                 new CarouselItem
                 {
                     Id = 2,
                     Name = "Road Bike Promotion",
-                    CategoryId = 2,
-                    Order = 2
+                    CategoryId = 3,
+                    Range = 10
                 },
                 new CarouselItem
                 {
                     Id = 3,
                     Name = "Urban Bike Promotion",
-                    CategoryId = 3,
-                    Order = 3
+                    CategoryId = 4,
+                    Range = 10
                 }
             );
         }
