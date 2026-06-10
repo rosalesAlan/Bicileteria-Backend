@@ -121,7 +121,7 @@ namespace Bicicleteria.Backend.Controllers
         /// Actualiza un producto e invalida la caché. Solo para Administradores.
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] Product product)
@@ -253,6 +253,18 @@ namespace Bicicleteria.Backend.Controllers
                 _logger.LogError($"Error sincronizando caché: {ex.Message}");
                 return StatusCode(500, new { message = "Error sincronizando caché", error = ex.Message });
             }
+        }
+
+        [HttpGet("debug")]
+        [Authorize]
+        public IActionResult Debug()
+        {
+            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+            var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+            var name = User.Identity?.Name;
+            var roles = User.FindAll("role").Select(c => c.Value).ToList();
+
+            return Ok(new { isAuthenticated, name, roles, claims });
         }
     }
 }

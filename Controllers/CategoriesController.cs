@@ -72,7 +72,7 @@ namespace Bicicleteria.Backend.Controllers
         /// Crea una nueva categoría. Solo para administradores.
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<ActionResult<Category>> CreateCategory([FromBody] Category category)
@@ -110,7 +110,7 @@ namespace Bicicleteria.Backend.Controllers
         /// Actualiza una categoría por ID. Solo para administradores.
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] Category category)
@@ -156,7 +156,7 @@ namespace Bicicleteria.Backend.Controllers
         /// Solo permite eliminar si no tiene productos asociados.
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             try

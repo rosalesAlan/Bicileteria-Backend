@@ -69,7 +69,6 @@ namespace Bicicleteria.Backend.Controllers
             var issuer = _configuration["JWT_ISSUER"];
             var audience = _configuration["JWT_AUDIENCE"];
             var expireMinutes = int.Parse(_configuration["JWT_EXPIRE_MINUTES"] ?? "60");
-
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -78,9 +77,10 @@ namespace Bicicleteria.Backend.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-                new Claim("role", user.Role.Name)
+                new Claim(ClaimTypes.Role, user.Role.Name)
             };
-            Console.WriteLine($"Generando JWT para usuario {user.Id} ({user.Email}), rol: {user.Role.Name}");
+            Console.WriteLine($"Generando JWT para usuario {user.Id} ({user.Email}), rol: {user.Role.Name} roltype");
+
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
@@ -185,7 +185,7 @@ namespace Bicicleteria.Backend.Controllers
 
             if (!password.Any(char.IsDigit))
                 return BadRequest(new { message = "La contraseña debe contener números (0-9)" });
-
+            
             return null; // Válida
         }
     }

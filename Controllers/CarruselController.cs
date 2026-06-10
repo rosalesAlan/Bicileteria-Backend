@@ -99,7 +99,7 @@ namespace Bicicleteria.Backend.Controllers
         /// Crea un nuevo slide del carrusel. Solo para administradores.
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<ActionResult<object>> CreateCarouselItem([FromBody] CarouselItem carouselItem)
@@ -148,10 +148,11 @@ namespace Bicicleteria.Backend.Controllers
         }
 
         /// <summary>
+        /// <summary>
         /// Actualiza un slide del carrusel. Solo para administradores.
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
         public async Task<IActionResult> UpdateCarouselItem(int id, [FromBody] CarouselItem carouselItem)
@@ -202,7 +203,7 @@ namespace Bicicleteria.Backend.Controllers
         /// Elimina un slide del carrusel. Solo para administradores.
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCarouselItem(int id)
         {
             try

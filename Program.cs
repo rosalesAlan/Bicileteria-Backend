@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 Console.WriteLine("[STARTUP] Iniciando aplicacion Bicicleteria Backend");
 
@@ -131,7 +134,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = audience,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
-            RoleClaimType = "role"
+            RoleClaimType = ClaimTypes.Role
         };
     });
 Console.WriteLine("[STARTUP] JWT Bearer configurado");
