@@ -80,12 +80,7 @@ namespace Bicicleteria.Backend.Data
             modelBuilder.Entity<CarouselItem>().ToTable("carrusel");
             modelBuilder.Entity<CarouselItem>().HasKey(c => c.Id);
             modelBuilder.Entity<CarouselItem>().Property(c => c.Name).IsRequired().HasMaxLength(200);
-            modelBuilder.Entity<CarouselItem>().Property(c => c.Range).HasMaxLength(100);
-            modelBuilder.Entity<CarouselItem>()
-                .HasOne(c => c.Category)
-                .WithMany()
-                .HasForeignKey(c => c.CategoryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<CarouselItem>().Property(c => c.Range).HasColumnName("order").HasDefaultValue(0);
 
             // Generar hashes de contraseñas usando BCrypt
             var passwordHash1 = BCrypt.Net.BCrypt.HashPassword("Demo1234");

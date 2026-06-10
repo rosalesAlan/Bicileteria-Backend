@@ -34,7 +34,6 @@ namespace Bicicleteria.Backend.Controllers
                 _logger.LogInformation("GET /api/carrusel - Obteniendo slides del carrusel");
 
                 var carouselItems = await _context.CarouselItems
-                    .Include(c => c.Category)
                     .OrderBy(c => c.Range   )
                     .ToListAsync();
 
@@ -44,7 +43,6 @@ namespace Bicicleteria.Backend.Controllers
                     c.Name,
                     c.Range,
                     rango = c.Range,
-                    category = c.Category != null ? new { c.Category.Id, c.Category.Name } : null,
                     categoryId = c.CategoryId
                 }).ToList();
 
@@ -67,9 +65,7 @@ namespace Bicicleteria.Backend.Controllers
         {
             try
             {
-                var carouselItem = await _context.CarouselItems
-                    .Include(c => c.Category)
-                    .FirstOrDefaultAsync(c => c.Id == id);
+                var carouselItem = await _context.CarouselItems.FindAsync(id);
 
                 if (carouselItem == null)
                 {
@@ -82,7 +78,6 @@ namespace Bicicleteria.Backend.Controllers
                     carouselItem.Name,
                     carouselItem.Range,
                     rango = carouselItem.Range,
-                    category = carouselItem.Category != null ? new { carouselItem.Category.Id, carouselItem.Category.Name } : null,
                     categoryId = carouselItem.CategoryId
                 };
 
@@ -135,7 +130,6 @@ namespace Bicicleteria.Backend.Controllers
                     carouselItem.Range,
                     rango = carouselItem.Range,
                     categoryId = carouselItem.CategoryId,
-                    category = carouselItem.Category != null ? new { carouselItem.Category.Id, carouselItem.Category.Name } : null
                 };
 
                 return CreatedAtAction(nameof(GetCarouselItemById), new { id = carouselItem.Id }, result);
