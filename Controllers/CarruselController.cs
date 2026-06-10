@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Bicicleteria.Backend.Data;
 using Bicicleteria.Backend.Models;
+using Bicicleteria.Backend.DTOs;
 
 namespace Bicicleteria.Backend.Controllers
 {
@@ -97,30 +98,45 @@ namespace Bicicleteria.Backend.Controllers
         [Authorize(Roles = "Admin")]
         [Produces("application/json")]
         [Consumes("application/json")]
-        public async Task<ActionResult<object>> CreateCarouselItem([FromBody] CarouselItem carouselItem)
+        public async Task<ActionResult<object>> CreateCarouselItem([FromBody] CreateCaruselItemDto createCaruselItemDto)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(carouselItem.Name))
+                // verificion de los datos de entrada
+                if (string.IsNullOrWhiteSpace(createCaruselItemDto.Name))
                 {
                     return BadRequest(new { message = "El nombre del slide es obligatorio." });
-                }
+                };
+
 
                 // Validar que la categoría exista si se proporciona
-                if (carouselItem.CategoryId.HasValue)
+                if (createCaruselItemDto.CategoryId.HasValue)
                 {
                     var categoryExists = await _context.Categories
-                        .AnyAsync(c => c.Id == carouselItem.CategoryId.Value);
+                        .AnyAsync(c => c.Id == createCaruselItemDto.CategoryId.Value);
 
                     if (!categoryExists)
                     {
                         return BadRequest(new { message = "La categoría especificada no existe." });
-                    }
-                }
+                    };
+                };
+
+                //Creamos el objeto que será mandado a la base de datos, con los datos que el usuario nos dio
+
+                var carouselItem = new CarouselItem
+                {
+                    Name = createCaruselItemDto.Name,
+                    Range = createCaruselItemDto.Range,
+                    CategoryId = createCaruselItemDto.CategoryId
+                };
+
+                // enviamos el objeto a la base de datos
 
                 _context.CarouselItems.Add(carouselItem);
+                // guardamos los cambios en la base de datos
                 await _context.SaveChangesAsync();
 
+                // Logueamos la creación del nuevo slide del carrusel
                 _logger.LogInformation($"Slide del carrusel creado: {carouselItem.Id} - {carouselItem.Name}");
 
                 var result = new
@@ -131,11 +147,12 @@ namespace Bicicleteria.Backend.Controllers
                     rango = carouselItem.Range,
                     categoryId = carouselItem.CategoryId,
                 };
-
+                // Retornamos el nuevo slide del carrusel creado, con un status 201 Created
                 return CreatedAtAction(nameof(GetCarouselItemById), new { id = carouselItem.Id }, result);
             }
             catch (Exception ex)
             {
+                // Logueamos el error ocurrido al intentar crear un nuevo slide del carrusel
                 _logger.LogError($"Error al crear slide del carrusel: {ex.Message}");
                 return StatusCode(500, new { message = "Error al crear slide del carrusel" });
             }
