@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ZN96aiz17WA=",
+  "dgSpecHash": "gPtqtCcaqTg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Alan Rosales\\Universidad\\Programcion 3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj",
+  "projectFilePath": "C:\\Users\\Alan Rosales\\Universidad\\Programacion3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Alan Rosales\\.nuget\\packages\\bcrypt.net-next\\4.2.0\\bcrypt.net-next.4.2.0.nupkg.sha512",
     "C:\\Users\\Alan Rosales\\.nuget\\packages\\dotnetenv\\3.2.0\\dotnetenv.3.2.0.nupkg.sha512",

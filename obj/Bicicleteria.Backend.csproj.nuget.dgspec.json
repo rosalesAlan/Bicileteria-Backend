@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Alan Rosales\\Universidad\\Programcion 3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj": {}
+    "C:\\Users\\Alan Rosales\\Universidad\\Programacion3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Alan Rosales\\Universidad\\Programcion 3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj": {
+    "C:\\Users\\Alan Rosales\\Universidad\\Programacion3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Alan Rosales\\Universidad\\Programcion 3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj",
+        "projectUniqueName": "C:\\Users\\Alan Rosales\\Universidad\\Programacion3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj",
         "projectName": "Bicicleteria.Backend",
-        "projectPath": "C:\\Users\\Alan Rosales\\Universidad\\Programcion 3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj",
+        "projectPath": "C:\\Users\\Alan Rosales\\Universidad\\Programacion3\\Bicileteria-Backend\\Bicicleteria.Backend.csproj",
         "packagesPath": "C:\\Users\\Alan Rosales\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Alan Rosales\\Universidad\\Programcion 3\\Bicileteria-Backend\\obj\\",
+        "outputPath": "C:\\Users\\Alan Rosales\\Universidad\\Programacion3\\Bicileteria-Backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -45,7 +46,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net8.0": {
@@ -108,7 +109,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
