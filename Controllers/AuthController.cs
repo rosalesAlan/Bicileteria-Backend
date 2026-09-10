@@ -32,19 +32,20 @@ namespace Bicicleteria.Backend.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [Consumes("application/json")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Mail) || string.IsNullOrWhiteSpace(request.Password))
+            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             {
                 _logger.LogWarning("Intento de login con datos incompletos");
-                return BadRequest(new { message = "Mail y contraseña son requeridos" });
+                return BadRequest(new { message = "Email y contraseña son requeridos" });
             }
+            
 
-            var user = _context.Usuarios.FirstOrDefault(u => u.Mail == request.Mail);
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
-                _logger.LogWarning($"Intento de login fallido para: {request.Mail}");
+                _logger.LogWarning($"Intento de login fallido para: {request.Email}");
                 return Unauthorized(new { message = "Credenciales inválidas" });
             }
 
@@ -52,33 +53,34 @@ namespace Bicicleteria.Backend.Controllers
             var userDto = new UserDto
             {
                 Id = user.Id,
-                Nombre = user.Nombre,
-                Apellido = user.Apellido,
-                Mail = user.Mail,
-                Rol = user.Rol
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                RoleName = user.Role.Name
             };
 
-            _logger.LogInformation($"Login exitoso para usuario: {user.Id} ({user.Mail})");
+            _logger.LogInformation($"Login exitoso para usuario: {user.Id} ({user.Email})");
             return Ok(new LoginResponse { AccessToken = token, User = userDto });
         }
 
         private string GenerateJwtToken(User user)
         {
             var key = _configuration["JWT_KEY"];
-            var issuer = _configuration["JWT_ISSER"];
+            var issuer = _configuration["JWT_ISSUER"];
             var audience = _configuration["JWT_AUDIENCE"];
             var expireMinutes = int.Parse(_configuration["JWT_EXPIRE_MINUTES"] ?? "60");
-
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Mail),
-                new Claim(ClaimTypes.Name, $"{user.Nombre} {user.Apellido}"),
-                new Claim("Rol", user.Rol)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+                new Claim(ClaimTypes.Role, user.Role.Name)
             };
+            Console.WriteLine($"Generando JWT para usuario {user.Id} ({user.Email}), rol: {user.Role.Name} roltype");
+
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
@@ -110,45 +112,53 @@ namespace Bicicleteria.Backend.Controllers
                 }
 
                 // Email duplicado (case-insensitive)
-                var emailExist = await _context.Usuarios
-                    .AnyAsync(u => u.Mail.ToLower() == request.Email.Trim().ToLower());
-                if (emailExist)
+                var emailExists = await _context.Users
+                    .AnyAsync(u => u.Email.ToLower() == request.Email.Trim().ToLower());
+                if (emailExists)
                 {
                     _logger.LogWarning($"Intento de registro con email duplicado: {request.Email}");
                     return BadRequest(new { message = "El correo electrónico ya está en uso" });
                 }
 
                 // Teléfono duplicado
-                var numeroExist = await _context.Usuarios
-                    .AnyAsync(u => u.NumeroTelefono == request.NumeroTelefono.Trim());
-                if (numeroExist)
+                var phoneExists = await _context.Users
+                    .AnyAsync(u => u.PhoneNumber == request.PhoneNumber.Trim());
+                if (phoneExists)
                 {
-                    _logger.LogWarning($"Intento de registro con teléfono duplicado: {request.NumeroTelefono}");
+                    _logger.LogWarning($"Intento de registro con teléfono duplicado: {request.PhoneNumber}");
                     return BadRequest(new { message = "Este número de teléfono ya está en uso" });
                 }
 
-                // Crear nuevo usuario
-                var nuevoUsuario = new User
+                // Obtener rol por defecto (Customer)
+                var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == 4); // name = cliente; id = 4
+                if (customerRole == null)
                 {
-                    Nombre = request.Nombre.Trim(),
-                    Apellido = request.Apellido.Trim(),
-                    Mail = request.Email.Trim().ToLower(),
-                    NumeroTelefono = request.NumeroTelefono.Trim(),
+                    _logger.LogError("No se encontró el rol 'Cliente' en la base de datos");
+                    return StatusCode(500, new { message = "Error al asignar rol de usuario" });
+                }
+
+                // Crear nuevo usuario
+                var newUser = new User
+                {
+                    FirstName = request.FirstName.Trim(),
+                    LastName = request.LastName.Trim(),
+                    Email = request.Email.Trim().ToLower(),
+                    PhoneNumber = request.PhoneNumber.Trim(),
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                    Rol = "cliente"
+                    RoleId = customerRole.Id
                 };
 
-                _context.Usuarios.Add(nuevoUsuario);
+                _context.Users.Add(newUser);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"Usuario registrado exitosamente: {nuevoUsuario.Id} ({nuevoUsuario.Mail})");
+                _logger.LogInformation($"Usuario registrado exitosamente: {newUser.Id} ({newUser.Email})");
 
                 return Created(
-                    $"/api/auth/profile/{nuevoUsuario.Id}",
+                    $"/api/auth/profile/{newUser.Id}",
                     new
                     {
-                        userId = nuevoUsuario.Id,
-                        email = nuevoUsuario.Mail,
+                        userId = newUser.Id,
+                        email = newUser.Email,
                         message = "Usuario registrado exitosamente"
                     }
                 );
@@ -175,7 +185,7 @@ namespace Bicicleteria.Backend.Controllers
 
             if (!password.Any(char.IsDigit))
                 return BadRequest(new { message = "La contraseña debe contener números (0-9)" });
-
+            
             return null; // Válida
         }
     }
