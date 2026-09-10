@@ -1,48 +1,125 @@
 
-```markdown
 # 🚴 Bicicletería Backend
 
-API REST para gestión de bicicletas y usuarios.  
-Desarrollada con **ASP.NET Core 8.0**, **Entity Framework Core**, **PostgreSQL**, **JWT** y **Swagger**.
+**API REST profesional** para gestión de bicicletas, categorías, carrusel y usuarios.  
+Desarrollada con **ASP.NET Core 8.0**, **Entity Framework Core**, **PostgreSQL**, **MongoDB**, **JWT** y **Swagger**.
+
+> **Tecnología Híbrida:** PostgreSQL para datos transaccionales + MongoDB para caché de productos.
 
 ---
 
 ## 📋 Tabla de Contenidos
 
 - [Características](#características)
+- [Arquitectura](#arquitectura)
 - [Requisitos Previos](#requisitos-previos)
 - [Instalación y Configuración](#instalación-y-configuración)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Base de Datos](#base-de-datos)
 - [API Endpoints](#api-endpoints)
-- [Autenticación JWT](#autenticación-jwt)
+- [Autenticación y Autorización](#autenticación-y-autorización)
+- [Caché con MongoDB](#caché-con-mongodb)
 - [Swagger UI](#swagger-ui)
+- [Prueba de Endpoints](#prueba-de-endpoints)
 - [Datos Semilla](#datos-semilla)
 - [Ejecución](#ejecución)
 - [Solución de Problemas](#solución-de-problemas)
 - [Paquetes NuGet](#paquetes-nuget)
-- [Enlaces Útiles](#enlaces-útiles)
 
 ---
 
 ## ✨ Características
 
-- ✅ Autenticación JWT (Bearer token, expiración configurable)
-- ✅ Base de datos PostgreSQL con Entity Framework Core 8
-- ✅ Migraciones automáticas y datos semilla
-- ✅ Contraseñas hasheadas con BCrypt
-- ✅ CORS habilitado (para comunicación con frontend)
-- ✅ Documentación interactiva con **Swagger** (OpenAPI)
-- ✅ Uso de variables de entorno (`.env`) para secretos
-- ✅ Endpoints públicos y protegidos
+- ✅ **Arquitectura de dos bases de datos**: PostgreSQL (OLTP) + MongoDB (Caché)
+- ✅ **Autenticación JWT** con Bearer tokens y validación de issuer/audience
+- ✅ **Control de roles**: endpoints protegidos solo para administradores
+- ✅ **Caché inteligente**: productos servidos desde MongoDB con TTL configurable
+- ✅ **CRUD completo** para: Productos, Categorías, Carrusel, Usuarios
+- ✅ **Migraciones automáticas** con EF Core y datos semilla
+- ✅ **Contraseñas** hasheadas con BCrypt
+- ✅ **CORS habilitado** (AllowAll) para frontend y herramientas externas
+- ✅ **Documentación interactiva** Swagger con botón Authorize para JWT
+- ✅ **Variables de entorno** (.env) para configuración segura
+- ✅ **Logging detallado** en startup y operaciones
+- ✅ **Validación de integridad referencial** en eliminaciones
+
+---
+
+## 🏗️ Arquitectura
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   Frontend (React)                   │
+└────────────────────────┬────────────────────────────┘
+                         │
+                    HTTPS/CORS
+                         │
+        ┌────────────────┴────────────────┐
+        │                                 │
+┌───────▼──────────────┐        ┌────────▼──────────┐
+│   ASP.NET Core 8.0   │        │   Swagger UI       │
+│   (REST API)         │        │   (Testing)        │
+└───────┬──────────────┘        └────────┬───────────┘
+        │                                │
+        │ JWT Auth + CORS                │
+        │                                │
+    ┌───┴─────────────────────────────┬──┘
+    │                                 │
+┌───▼────────────────┐    ┌──────────▼────────┐
+│   PostgreSQL       │    │   MongoDB         │
+│ (Transaccional)    │    │ (Caché/Products)  │
+│                    │    │                   │
+│ • Users            │    │ • CachedProducts  │
+│ • Products         │    │   (TTL)           │
+│ • Categories       │    │ • Caché Status    │
+│ • CarouselItems    │    │                   │
+└────────────────────┘    └───────────────────┘
+```
+
+### Flujo de Datos
+
+1. **GET /api/productos** (sin token):
+   - Controlador consulta `MongoCacheService`
+   - Si caché válido → retorna desde MongoDB
+   - Si caché expirado → consulta PostgreSQL, actualiza MongoDB, retorna datos
+
+2. **POST/PUT/DELETE** (solo admin):
+   - Valida token JWT y rol "admin"
+   - Modifica datos en PostgreSQL
+   - Invalida caché en MongoDB
+   - Próxima consulta recarga desde PostgreSQL
+
+3. **Categorías y Carrusel** (públicos):
+   - Consulta directamente PostgreSQL (datos pequeños)
+   - Sin caché (bajo volumen)
 
 ---
 
 ## 🛠️ Requisitos Previos
 
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [PostgreSQL](https://www.postgresql.org/download/) (12 o superior)
-- Opcional: Visual Studio 2022 / VS Code / Git
+### Obligatorio
+- [**.NET 8.0 SDK**](https://dotnet.microsoft.com/download/dotnet/8.0) (o superior)
+- [**PostgreSQL**](https://www.postgresql.org/download/) 12+ 
+- [**MongoDB**](https://www.mongodb.com/try/download/community) 4.4+
+- [**Git**](https://git-scm.com/)
+
+### Opcional
+- Visual Studio 2022 Community (IDE recomendado)
+- VS Code + C# extension
+- Postman o Insomnia (para pruebas API)
+
+### Verificar instalación
+
+```bash
+# .NET
+dotnet --version
+
+# PostgreSQL
+psql --version
+
+# MongoDB (si está instalado)
+mongosh --version
+```
 
 ---
 
@@ -55,47 +132,90 @@ git clone https://github.com/rosalesAlan/Bicileteria-Backend.git
 cd Bicileteria-Backend
 ```
 
-### 2. Restaurar paquetes
+### 2. Restaurar paquetes NuGet
 
 ```bash
 dotnet restore
 ```
 
-### 3. Configurar variables de entorno (archivo `.env`)
+### 3. Configurar variables de entorno (`.env`)
 
-Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido (basado en `.env.example`):
+Crea archivo `.env` en la raíz del proyecto:
 
 ```env
+# PostgreSQL
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=BicicleteriaDB
 DB_USER=postgres
-DB_PASSWORD=tu_contraseña_aqui
+DB_PASSWORD=tu_contraseña_postgres
 
-JWT_KEY=clave_secreta_muy_larga_minimo_32_caracteres
+# MongoDB
+MongoDb__ConnectionString=mongodb://localhost:27017
+
+# JWT
+JWT_KEY=tu_clave_secreta_super_larga_minimo_32_caracteres_aqui
 JWT_ISSUER=https://bicicleteria.localhost
 JWT_AUDIENCE=bicicleteria-app
 JWT_EXPIRE_MINUTES=60
+
+# Entorno
+ASPNETCORE_ENVIRONMENT=Development
 ```
 
-> ⚠️ **Nunca** subas el archivo `.env` al repositorio (está en `.gitignore`).  
+> ⚠️ **IMPORTANTE:** El archivo `.env` está en `.gitignore`. Nunca lo subas al repositorio.  
 > Puedes copiar `.env.example` como plantilla.
 
-### 4. Crear la base de datos (si no existe)
+### 4. Crear base de datos PostgreSQL
 
-Conéctate a PostgreSQL y ejecuta:
-
+**Opción A: SQL directo**
 ```sql
-CREATE DATABASE "BicicleteriaDB";
+CREATE DATABASE "BicicleteriaDB" ENCODING 'UTF8';
 ```
 
-### 5. Aplicar migraciones
+**Opción B: Con pgAdmin**
+- Conectar a servidor local
+- Clic derecho en "Databases" → Create → Database
+- Nombre: `BicicleteriaDB`
+
+**Opción C: Verificar conexión con psql**
+```bash
+psql -h localhost -U postgres -c "CREATE DATABASE \"BicicleteriaDB\";"
+```
+
+### 5. Verificar MongoDB
+
+**Opción A: Local (servicio corriendo)**
+```bash
+# En Windows
+net start MongoDB
+
+# En Linux/Mac
+brew services start mongodb-community
+```
+
+**Opción B: Cloud (MongoDB Atlas)**
+- Crear cluster en [mongodb.com/cloud](https://www.mongodb.com/cloud)
+- Copiar connection string en `.env` → `MongoDb__ConnectionString`
+
+### 6. Aplicar Migraciones de EF Core
 
 ```bash
 dotnet ef database update
 ```
 
-Esto creará las tablas `usuarios` y `productos`, e insertará los datos de prueba.
+**Output esperado:**
+```
+Building...
+Applying migration '20240101000000_InitialCreate'.
+...
+Done.
+```
+
+Esto crea:
+- Tablas: `roles`, `users`, `categories`, `products`, `carousel_items`
+- Índices automáticos en EF
+- Inserta **datos semilla** (usuarios, categorías, productos)
 
 ---
 
