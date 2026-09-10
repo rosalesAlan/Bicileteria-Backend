@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text;
 using Bicicleteria.Backend.Cache;
 using Bicicleteria.Backend.Data;
 using Bicicleteria.Backend.Services;
@@ -10,8 +9,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 Console.WriteLine("[STARTUP] Iniciando aplicacion Bicicleteria Backend");
 
@@ -52,7 +49,7 @@ Console.WriteLine("[STARTUP] AppDbContext registrado para PostgreSQL");
 
 // ===== MONGODB - Servicio de caché =====
 Console.WriteLine("[STARTUP] ========== CONFIGURACION DE MONGODB ==========");
-var mongoDbConnectionString = builder.Configuration.GetConnectionString("MongoDb") ?? "mongodb://localhost:27017";
+var mongoDbConnectionString = builder.Configuration.GetConnectionString("MongoDb") ?? "mongodb://mongodb:27017";
 Console.WriteLine($"[STARTUP] Connection string MongoDB: {mongoDbConnectionString}");
 
 var mongoClient = new MongoClient(mongoDbConnectionString);

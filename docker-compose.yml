@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # ========== PostgreSQL ==========
+  postgres:
+    image: postgres:16-alpine
+    container_name: bicicleteria-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: PLOKIJUH
+      POSTGRES_DB: BicileteriaDB
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5433:5432"
+    volumes:
+      # Bind mount para importar el backup automáticamente al iniciar
+      - ./initdb:/docker-entrypoint-initdb.d
+      # Volumen nombrado para persistencia de datos
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bicicleteria-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ========== MongoDB ==========
+  mongodb:
+    image: mongo:7
+    container_name: bicicleteria-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongo_password
+    ports:
+      - "27017:27017"
+    volumes:
+      # Volumen nombrado para persistencia de datos
+      - mongodb_data:/data/db
+    networks:
+      - bicicleteria-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok", "-u", "root", "-p", "mongo_password", "--authenticationDatabase", "admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ========== Backend (.NET 8) ==========
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: bicicleteria-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    environment:
+      # PostgreSQL
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: BicileteriaDB
+      DB_USER: postgres
+      DB_PASSWORD: PLOKIJUH
+      # MongoDB - ConnectionStrings:MongoDb mapea desde ConnectionStrings__MongoDb
+      ConnectionStrings__MongoDb: "mongodb://root:mongo_password@mongodb:27017/?authSource=admin"
+      # JWT
+      JWT_KEY: s3CuR4K3yJWT2025L4rG4yS3gur4BiciAAAAAAA
+      JWT_ISSUER: https://bicicleteria.localhost
+      JWT_AUDIENCE: bicicleteria-app
+      JWT_EXPIRE_MINUTES: 120
+      # ASP.NET Core
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:80
+    ports:
+      - "5147:80"
+    networks:
+      - bicicleteria-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/api/Health/connections"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+networks:
+  bicicleteria-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  mongodb_data:
+    driver: local

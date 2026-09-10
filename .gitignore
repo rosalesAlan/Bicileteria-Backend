@@ -25,9 +25,20 @@ artifacts/
 # Environment files (protect local credentials)
 .env
 .env.local
+.env.*.local
 appsettings.Development.json
 *.local.json
+
+# Database backups with sensitive data
+initdb/bicicleteria_backup.sql
+
+# Documentation artifacts (non-source)
 VERIFICACION.md
 
 # Operating system
 Thumbs.db
+.DS_Store
+
+# Log files
+*.log
+logs/
